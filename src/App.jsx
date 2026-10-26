@@ -163,8 +163,8 @@ export default function App() {
             <SpaceBetween size="m">
               <Button variant="icon" iconName="edit" ariaLabel="New conversation" />
               <Button variant="icon" iconName="download" ariaLabel="Download conversation" />
-              <Button variant="icon" iconName="settings" ariaLabel="Settings" />
               <Button variant="icon" iconSvg={<SourcesIcon />} ariaLabel="Sources" />
+              <Button variant="icon" iconName="settings" ariaLabel="Settings" />
             </SpaceBetween>
           </Container>
         </Box>

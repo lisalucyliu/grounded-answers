@@ -10,6 +10,10 @@ A redesign of AWS Docs AI, the AI answer feature on docs.aws.amazon.com. This re
 - If nothing in Cloudscape fits a part, stop and tell Lisa, with up to 3 options.
 - No style changes from Cloudscape without Lisa's OK. Approved so far:
   - The user's question bubble uses `type="outgoing"` with `style.bubble.background = colorBackgroundChatBubbleIncoming`, so it's gray like the current AWS Docs AI.
+  - No AI bubble or avatar. The response stays plain text, as in the current AWS Docs AI layout.
+  - Regenerate shows only on a stopped response, only one time.
+  - Inline [n] links jump to the Sources list.
+  - Sources is an always-open heading and list under the response.
 - Ask before adding anything that isn't in the request.
 
 ## Designs
@@ -23,7 +27,7 @@ A redesign of AWS Docs AI, the AI answer feature on docs.aws.amazon.com. This re
 
 - Top navigation: plain text title "Docs prototype". No AWS logo, and never "AWS Documentation". The search input shows the current question.
 - Tabs: "Docs AI" (active) and "All results" (disabled for now).
-- Left icon rail: edit, download, settings, sources. All inert until their features are built.
+- Left icon rail: edit, download, sources, settings. All inert until their features are built.
 - The user's question is a bubble on the right. The response is plain text on the left. No avatars and no AI bubble.
 - The prompt input is pinned at the bottom of the viewport. Only the conversation scrolls. New text stays in view unless the reader scrolls up.
 - Below 688px (Cloudscape's "s" breakpoint) the left rail is hidden. Not yet confirmed by Lisa.
@@ -51,7 +55,7 @@ A redesign of AWS Docs AI, the AI answer feature on docs.aws.amazon.com. This re
 - React + Vite, plain JavaScript.
 - One Vercel function, `api/answer.js`, streams newline-delimited JSON to the browser.
 - Model: `claude-sonnet-5-5` (current Claude Sonnet, checked in the Claude API models overview). Effort is set to `low`. Always check the model ID in the docs, never guess it.
-- Vercel project: `grounded-answers`. Never link this folder to `hp-newsroom`.
+- Vercel project: `grounded-answers`. Never link this folder to another Vercel project.
 
 ## Secrets
 
@@ -90,10 +94,6 @@ Playwright tests call the real Claude API, so every run costs money. Run only wh
 These follow Lisa's spec, or weren't in the request, so they wait for her. Each needs either approval (then add it to "Approved so far") or a spec change.
 - **Empty state.** The page before the first question is a blank area with the prompt input. Cloudscape offers support prompts for suggested questions.
 - **Thumbs down.** It only toggles. Cloudscape opens a dialog to collect more feedback.
-- **No AI bubble or avatar.** The response is plain text, and loading uses a Status indicator. Cloudscape uses an incoming chat bubble with a generative AI avatar.
-- **Sources.** Shown as an always-open "Sources" heading and list. Cloudscape uses an expandable section titled "Sources", and suggests description text size for source details.
-- **Inline citations.** `[n]` links jump to the Sources list. Cloudscape uses a popover per citation with the source title.
-- **Regenerate.** Only on a stopped response, only once. Cloudscape also allows it on completed responses.
 - **Smaller items.** The rail hides on phone. Thumbs up and down still show when a stop happened before any text. Response lines run about 1290px wide at 1440, and Cloudscape suggests constraining width.
 
 ## Doc data
