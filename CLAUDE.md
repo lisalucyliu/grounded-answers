@@ -98,7 +98,13 @@ These follow Lisa's spec, or weren't in the request, so they wait for her. Each 
 
 ## Doc data
 
-`data/docs.json` holds 3 sections from the live Amazon S3 User Guide (encryption overview, SSE-KMS, DSSE-KMS). Each section has the page title, guide name, section heading, section URL with its `#anchor`, and its paragraphs. Use only text from the live pages. The full doc set comes later.
+`data/docs.json` holds 25 sections from live AWS docs pages: Amazon S3 encryption, versioning and replication, one S3 cost example, AWS Data Exchange export and data grant pages, and the Request Syntax for TagResource in the Data Exchange and S3 Control API references. Each section has the page title, guide name, section heading, URL and paragraphs. Use only text from the live pages, word for word.
+
+- Subsection sources carry their #anchor. Page intros use the plain page URL.
+- The sections were picked with the questions in `evals/questions.md` in view. 19 hold answers. The cost example section is there for N1: it has a price but names no Region.
+- These 6 sections hold no answer to any eval question, so Claude has to choose what to cite: `UsingKMSEncryption-bucket-keys`, `s3-batch-replication-completion-report`, `replication-kms-sse-c`, `dx-revision-export-keypatterns`, `dx-auto-export` and `dx-auto-export-console`.
+- Rebuild with `python3 scripts/extract_docs.py <folder for page HTML>`. The section list lives in the script.
+- Each question sends about 30,000 input tokens (about $0.07 per question with output). No prompt caching or search for now.
 
 ## Writing rules
 

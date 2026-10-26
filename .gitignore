@@ -8,3 +8,4 @@ playwright-report
 reviews/
 .playwright-cli/
 design/*.png
+baseline/

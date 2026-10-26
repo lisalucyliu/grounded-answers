@@ -1,23 +1,47 @@
 {
-  "source": "Live Amazon S3 User Guide pages",
+  "source": "Live AWS documentation pages, copied word for word",
   "sections": [
     {
       "id": "UsingEncryption",
       "pageTitle": "Protecting data with encryption",
       "guideName": "Amazon Simple Storage Service User Guide",
       "sectionHeading": "Protecting data with encryption",
-      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingEncryption.html#UsingEncryption",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingEncryption.html",
       "paragraphs": [
         "Amazon S3 now applies server-side encryption with Amazon S3 managed keys (SSE-S3) as the base level of encryption for every bucket in Amazon S3. Starting January 5, 2023, all new object uploads to Amazon S3 are automatically encrypted at no additional cost and with no impact on performance. The automatic encryption status for S3 bucket default encryption configuration and for new object uploads is available in CloudTrail logs, S3 Inventory, S3 Storage Lens, the Amazon S3 console, and as an additional Amazon S3 API response header in the AWS CLI and AWS SDKs. For more information, see Default encryption FAQ.",
         "Data protection refers to protecting data while it's in transit (as it travels to and from Amazon S3) and at rest (while it is stored on disks in Amazon S3 data centers). You can protect data in transit by using Secure Socket Layer/Transport Layer Security (SSL/TLS) including hybrid post-quantum key exchange or client-side encryption. For protecting data at rest in Amazon S3, you have the following options:",
-        "Server-side encryption – Amazon S3 encrypts your objects before saving them on disks in AWS data centers and then decrypts the objects when you download them. All Amazon S3 buckets have encryption configured by default, and all new objects that are uploaded to an S3 bucket are automatically encrypted at rest. Server-side encryption with Amazon S3 managed keys (SSE-S3) is the default encryption configuration for every bucket in Amazon S3. To use a different type of encryption, you can either specify the type of server-side encryption to use in your S3 PUT requests, or you can update the default encryption configuration in the destination bucket. If you want to specify a different encryption type in your PUT requests, you can use server-side encryption with AWS Key Management Service (AWS KMS) keys (SSE-KMS), dual-layer server-side encryption with AWS KMS keys (DSSE-KMS), or server-side encryption with customer-provided keys (SSE-C). If you want to set a different default encryption configuration in the destination bucket, you can use SSE-KMS or DSSE-KMS. For more information about changing the default encryption configuration for your general purpose buckets, see Configuring default encryption. When you change the default encryption configuration of your bucket to SSE-KMS, the encryption type of the existing Amazon S3 objects in the bucket is not changed. To change the encryption type of your pre-existing objects after updating the default encryption configuration to SSE-KMS, you can use Amazon S3 Batch Operations. You provide S3 Batch Operations with a list of objects, and Batch Operations calls the respective API operation. You can use the Copy objects action to copy existing objects, which writes them back to the same bucket as SSE-KMS encrypted objects. A single Batch Operations job can perform the specified operation on billions of objects. For more information, see Performing object operations in bulk with Batch Operations and the AWS Storage Blog post How to retroactively encrypt existing objects in Amazon S3 using S3 Inventory, Amazon Athena, and S3 Batch Operations. For more information about each option for server-side encryption, see Protecting data with server-side encryption. To configure server-side encryption, see:",
+        "Server-side encryption – Amazon S3 encrypts your objects before saving them on disks in AWS data centers and then decrypts the objects when you download them.",
+        "All Amazon S3 buckets have encryption configured by default, and all new objects that are uploaded to an S3 bucket are automatically encrypted at rest. Server-side encryption with Amazon S3 managed keys (SSE-S3) is the default encryption configuration for every bucket in Amazon S3. To use a different type of encryption, you can either specify the type of server-side encryption to use in your S3 PUT requests, or you can update the default encryption configuration in the destination bucket.",
+        "If you want to specify a different encryption type in your PUT requests, you can use server-side encryption with AWS Key Management Service (AWS KMS) keys (SSE-KMS), dual-layer server-side encryption with AWS KMS keys (DSSE-KMS), or server-side encryption with customer-provided keys (SSE-C). If you want to set a different default encryption configuration in the destination bucket, you can use SSE-KMS or DSSE-KMS.",
+        "For more information about changing the default encryption configuration for your general purpose buckets, see Configuring default encryption.",
+        "When you change the default encryption configuration of your bucket to SSE-KMS, the encryption type of the existing Amazon S3 objects in the bucket is not changed. To change the encryption type of your pre-existing objects after updating the default encryption configuration to SSE-KMS, you can use Amazon S3 Batch Operations. You provide S3 Batch Operations with a list of objects, and Batch Operations calls the respective API operation. You can use the Copy objects action to copy existing objects, which writes them back to the same bucket as SSE-KMS encrypted objects. A single Batch Operations job can perform the specified operation on billions of objects. For more information, see Performing object operations in bulk with Batch Operations and the AWS Storage Blog post How to retroactively encrypt existing objects in Amazon S3 using S3 Inventory, Amazon Athena, and S3 Batch Operations.",
+        "For more information about each option for server-side encryption, see Protecting data with server-side encryption.",
+        "To configure server-side encryption, see:",
         "Specifying server-side encryption with Amazon S3 managed keys (SSE-S3)",
         "Specifying server-side encryption with AWS KMS (SSE-KMS)",
         "Specifying dual-layer server-side encryption with AWS KMS keys (DSSE-KMS)",
         "Specifying server-side encryption with customer-provided keys (SSE-C)",
-        "Client-side encryption – You encrypt your data client-side and upload the encrypted data to Amazon S3. In this case, you manage the encryption process, encryption keys, and related tools. To configure client-side encryption, see Protecting data by using client-side encryption.",
+        "Client-side encryption – You encrypt your data client-side and upload the encrypted data to Amazon S3. In this case, you manage the encryption process, encryption keys, and related tools.",
+        "To configure client-side encryption, see Protecting data by using client-side encryption.",
         "To see which percentage of your storage bytes are encrypted, you can use Amazon S3 Storage Lens metrics. S3 Storage Lens is a cloud-storage analytics feature that you can use to gain organization-wide visibility into object-storage usage and activity. For more information, see Assessing your storage activity and usage with S3 Storage Lens. For a complete list of metrics, see S3 Storage Lens metrics glossary.",
         "For more information about server-side encryption, client-side encryption, and encryption in transit, review the following topics."
+      ]
+    },
+    {
+      "id": "UsingServerSideEncryption",
+      "pageTitle": "Using server-side encryption with Amazon S3 managed keys (SSE-S3)",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Using server-side encryption with Amazon S3 managed keys (SSE-S3)",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingServerSideEncryption.html",
+      "paragraphs": [
+        "Amazon S3 now applies server-side encryption with Amazon S3 managed keys (SSE-S3) as the base level of encryption for every bucket in Amazon S3. Starting January 5, 2023, all new object uploads to Amazon S3 are automatically encrypted at no additional cost and with no impact on performance. The automatic encryption status for S3 bucket default encryption configuration and for new object uploads is available in CloudTrail logs, S3 Inventory, S3 Storage Lens, the Amazon S3 console, and as an additional Amazon S3 API response header in the AWS CLI and AWS SDKs. For more information, see Default encryption FAQ.",
+        "All new object uploads to Amazon S3 buckets are encrypted by default with server-side encryption with Amazon S3 managed keys (SSE-S3).",
+        "Server-side encryption protects data at rest. Amazon S3 encrypts each object with a unique key. As an additional safeguard, it encrypts the key itself with a key that it rotates regularly. Amazon S3 server-side encryption uses 256-bit Advanced Encryption Standard Galois/Counter Mode (AES-GCM) to encrypt all uploaded objects.",
+        "There are no additional fees for using server-side encryption with Amazon S3 managed keys (SSE-S3). However, requests to configure the default encryption feature incur standard Amazon S3 request charges. For information about pricing, see Amazon S3 pricing.",
+        "If you require your data uploads to be encrypted using only Amazon S3 managed keys, you can use the following bucket policy. For example, the following bucket policy denies permissions to upload an object unless the request includes the x-amz-server-side-encryption header to request server-side encryption:",
+        "{ \"Version\":\"2012-10-17\", \"Id\": \"PutObjectPolicy\", \"Statement\": [ { \"Sid\": \"DenyObjectsThatAreNotSSES3\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": \"s3:PutObject\", \"Resource\": \"arn:aws:s3:::amzn-s3-demo-bucket/*\", \"Condition\": { \"StringNotEquals\": { \"s3:x-amz-server-side-encryption\": \"AES256\" } } } ] }",
+        "Server-side encryption encrypts only the object data, not the object metadata.",
+        "The s3:x-amz-server-side-encryption condition key used in bucket policies is an IAM condition key namespace and differs from the x-amz-server-side-encryption HTTP header shown in CloudTrail logs. Both refer to the same encryption setting, but use different formats. Additionally, this Deny policy might block writes from (such as Elastic Load Balancing access logs or Amazon CloudFront logs) that deliver objects to your bucket without specifying the encryption header."
       ]
     },
     {
@@ -25,7 +49,7 @@
       "pageTitle": "Using server-side encryption with AWS KMS keys (SSE-KMS)",
       "guideName": "Amazon Simple Storage Service User Guide",
       "sectionHeading": "Using server-side encryption with AWS KMS keys (SSE-KMS)",
-      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html#UsingKMSEncryption",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html",
       "paragraphs": [
         "Amazon S3 now applies server-side encryption with Amazon S3 managed keys (SSE-S3) as the base level of encryption for every bucket in Amazon S3. Starting January 5, 2023, all new object uploads to Amazon S3 are automatically encrypted at no additional cost and with no impact on performance. The automatic encryption status for S3 bucket default encryption configuration and for new object uploads is available in CloudTrail logs, S3 Inventory, S3 Storage Lens, the Amazon S3 console, and as an additional Amazon S3 API response header in the AWS CLI and AWS SDKs. For more information, see Default encryption FAQ.",
         "Server-side encryption is the encryption of data at its destination by the application or service that receives it.",
@@ -46,11 +70,22 @@
       ]
     },
     {
+      "id": "UsingKMSEncryption-bucket-keys",
+      "pageTitle": "Using server-side encryption with AWS KMS keys (SSE-KMS)",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Amazon S3 Bucket Keys",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html#sse-kms-bucket-keys",
+      "paragraphs": [
+        "When you configure server-side encryption using AWS KMS (SSE-KMS), you can configure your buckets to use S3 Bucket Keys for SSE-KMS. Using a bucket-level key for SSE-KMS can reduce your AWS KMS request costs by up to 99 percent by decreasing the request traffic from Amazon S3 to AWS KMS.",
+        "When you configure a bucket to use an S3 Bucket Key for SSE-KMS on new objects, AWS KMS generates a bucket-level key that is used to create unique data keys for objects in the bucket. This S3 Bucket Key is used for a time-limited period within Amazon S3, further reducing the need for Amazon S3 to make requests to AWS KMS to complete encryption operations. For more information about using S3 Bucket Keys, see Reducing the cost of SSE-KMS with Amazon S3 Bucket Keys."
+      ]
+    },
+    {
       "id": "UsingDSSEncryption",
       "pageTitle": "Using dual-layer server-side encryption with AWS KMS keys (DSSE-KMS)",
       "guideName": "Amazon Simple Storage Service User Guide",
       "sectionHeading": "Using dual-layer server-side encryption with AWS KMS keys (DSSE-KMS)",
-      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingDSSEncryption.html#UsingDSSEncryption",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingDSSEncryption.html",
       "paragraphs": [
         "Using dual-layer server-side encryption with AWS Key Management Service (AWS KMS) keys (DSSE-KMS) applies two layers of encryption to objects when they are uploaded to Amazon S3. DSSE-KMS helps you more easily fulfill compliance standards that require you to apply multilayer encryption to your data and have full control of your encryption keys.",
         "The \"dual\" in DSSE-KMS refers to two independent layers of AES-256 encryption that are applied to your data:",
@@ -68,6 +103,431 @@
         "Requiring dual-layer server-side encryption with AWS KMS keys (DSSE-KMS)",
         "To require dual-layer server-side encryption of all objects in a particular Amazon S3 bucket, you can use a bucket policy. For example, the following bucket policy denies the upload object (s3:PutObject) permission to everyone if the request does not include an x-amz-server-side-encryption header that requests server-side encryption with DSSE-KMS.",
         "{ \"Version\":\"2012-10-17\", \"Id\": \"PutObjectPolicy\", \"Statement\": [{ \"Sid\": \"DenyUnEncryptedObjectUploads\", \"Effect\": \"Deny\", \"Principal\": { \"AWS\": \"arn:aws:iam::111122223333:root\" }, \"Action\": \"s3:PutObject\", \"Resource\": \"arn:aws:s3:::amzn-s3-demo-bucket/*\", \"Condition\": { \"StringNotEquals\": { \"s3:x-amz-server-side-encryption\": \"aws:kms:dsse\" } } } ] }"
+      ]
+    },
+    {
+      "id": "Versioning",
+      "pageTitle": "Retaining multiple versions of objects with S3 Versioning",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Retaining multiple versions of objects with S3 Versioning",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html",
+      "paragraphs": [
+        "Versioning in Amazon S3 is a means of keeping multiple variants of an object in the same bucket. You can use the S3 Versioning feature to preserve, retrieve, and restore every version of every object stored in your buckets. With versioning you can recover more easily from both unintended user actions and application failures. After versioning is enabled for a bucket, if Amazon S3 receives multiple write requests for the same object simultaneously, it stores all of those objects.",
+        "Versioning-enabled buckets can help you recover objects from accidental deletion or overwrite. For example, if you delete an object, Amazon S3 inserts a delete marker instead of removing the object permanently. The delete marker becomes the current object version. If you overwrite an object, it results in a new object version in the bucket. You can always restore the previous version. For more information, see Deleting object versions from a versioning-enabled bucket.",
+        "By default, S3 Versioning is disabled on buckets, and you must explicitly enable it. For more information, see Enabling versioning on buckets.",
+        "The SOAP API does not support S3 Versioning. SOAP support over HTTP is deprecated, but it is still available over HTTPS. New Amazon S3 features are not supported for SOAP.",
+        "Normal Amazon S3 rates apply for every version of an object stored and transferred. Each version of an object is the entire object; it is not just a diff from the previous version. Thus, if you have three versions of an object stored, you are charged for three objects."
+      ]
+    },
+    {
+      "id": "Versioning-states",
+      "pageTitle": "Retaining multiple versions of objects with S3 Versioning",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Unversioned, versioning-enabled, and versioning-suspended buckets",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html#versioning-states",
+      "paragraphs": [
+        "Buckets can be in one of three states:",
+        "Unversioned (the default)",
+        "Versioning-enabled",
+        "Versioning-suspended",
+        "You enable and suspend versioning at the bucket level. After you version-enable a bucket, it can never return to an unversioned state. But you can suspend versioning on that bucket.",
+        "The versioning state applies to all (never some) of the objects in that bucket. When you enable versioning in a bucket, all new objects are versioned and given a unique version ID. Objects that already existed in the bucket at the time versioning was enabled will thereafter always be versioned and given a unique version ID when they are modified by future requests. Note the following:",
+        "Objects that are stored in your bucket before you set the versioning state have a version ID of null. When you enable versioning, existing objects in your bucket do not change. What changes is how Amazon S3 handles the objects in future requests. For more information, see Working with objects in a versioning-enabled bucket.",
+        "The bucket owner (or any user with appropriate permissions) can suspend versioning to stop accruing object versions. When you suspend versioning, existing objects in your bucket do not change. What changes is how Amazon S3 handles objects in future requests. For more information, see Working with objects in a versioning-suspended bucket."
+      ]
+    },
+    {
+      "id": "VersionSuspendedBehavior",
+      "pageTitle": "Working with objects in a versioning-suspended bucket",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Working with objects in a versioning-suspended bucket",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/VersionSuspendedBehavior.html",
+      "paragraphs": [
+        "In Amazon S3, you can suspend versioning to stop accruing new versions of the same object in a bucket. You might do this because you only want a single version of an object in a bucket. Or, you might not want to accrue charges for multiple versions.",
+        "When you suspend versioning, existing objects in your bucket do not change. What changes is how Amazon S3 handles objects in future requests. The topics in this section explain various object operations in a versioning-suspended bucket, including adding, retrieving, and deleting objects.",
+        "For more information about S3 Versioning, see Retaining multiple versions of objects with S3 Versioning. For more information about retrieving object versions, see Retrieving object versions from a versioning-enabled bucket."
+      ]
+    },
+    {
+      "id": "manage-versioning-examples",
+      "pageTitle": "Enabling versioning on buckets",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Enabling versioning on buckets",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/manage-versioning-examples.html",
+      "paragraphs": [
+        "You can use S3 Versioning to keep multiple versions of an object in one bucket. This section provides examples of how to enable versioning on a bucket using the console, REST API, AWS SDKs, and AWS Command Line Interface (AWS CLI).",
+        "After enabling versioning on a bucket for the first time, it may take up to 15 minutes for the change to fully propagate across the S3 system. During this time, GET requests for objects created or updated after enabling versioning may result in HTTP 404 NoSuchKey errors. We recommend waiting 15 minutes after enabling versioning before performing any write operations (PUT or DELETE) on objects in the bucket. This waiting period helps avoid potential issues with object visibility and version tracking.",
+        "For more information about S3 Versioning, see Retaining multiple versions of objects with S3 Versioning. For information about working with objects that are in versioning-enabled buckets, see Working with objects in a versioning-enabled bucket.",
+        "To learn more about how to use S3 Versioning to protect data, see Tutorial: Protecting data on Amazon S3 against accidental deletion or application bugs using S3 Versioning, S3 Object Lock, and S3 Replication.",
+        "Each S3 bucket that you create has a versioning subresource associated with it. (For more information, see General purpose buckets configuration options.) By default, your bucket is unversioned, and the versioning subresource stores the empty versioning configuration, as follows.",
+        "<VersioningConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"> </VersioningConfiguration>",
+        "To enable versioning, you can send a request to Amazon S3 with a versioning configuration that includes a status.",
+        "<VersioningConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"> <Status>Enabled</Status> </VersioningConfiguration>",
+        "To suspend versioning, you set the status value to Suspended.",
+        "The bucket owner and all authorized users can enable versioning. The bucket owner is the AWS account that created the bucket (the root account). For more information about permissions, see Identity and Access Management for Amazon S3.",
+        "The following sections provide more detail about enabling S3 Versioning using the console, AWS CLI, and the AWS SDKs.",
+        "Follow these steps to use the AWS Management Console to enable versioning on an S3 bucket.",
+        "To enable or disable versioning on an S3 general purpose bucket",
+        "Sign in to the AWS Management Console and open the Amazon S3 console at https://console.aws.amazon.com/s3/.",
+        "In the left navigation pane, choose General purpose buckets.",
+        "In the buckets list, choose the name of the bucket that you want to enable versioning for.",
+        "Choose Properties.",
+        "Under Bucket Versioning, choose Edit.",
+        "Choose Suspend or Enable, and then choose Save changes.",
+        "You can use AWS multi-factor authentication (MFA) with versioning. When you use MFA with versioning, you must provide your AWS account’s access keys and a valid code from the account’s MFA device to permanently delete an object version or suspend or reactivate versioning.",
+        "To use MFA with versioning, you enable MFA Delete. However, you can't enable MFA Delete using the AWS Management Console. You must use the AWS Command Line Interface (AWS CLI) or the API. For more information, see Configuring MFA delete.",
+        "The following example enables versioning on an S3 general purpose bucket.",
+        "aws s3api put-bucket-versioning --bucket amzn-s3-demo-bucket1 --versioning-configuration Status=Enabled",
+        "The following example enables S3 Versioning and multi-factor authentication (MFA) delete on a bucket for a physical MFA device. For physical MFA devices, in the --mfa parameter, pass a concatenation of the MFA device serial number, a space character, and the value that is displayed on your authentication device.",
+        "aws s3api put-bucket-versioning --bucket amzn-s3-demo-bucket1 --versioning-configuration Status=Enabled,MFADelete=Enabled --mfa \"SerialNumber 123456\"",
+        "The following example enables S3 Versioning and multi-factor authentication (MFA) delete on a bucket for a virtual MFA device. For virtual MFA devices, in the --mfa parameter, pass a concatenation of the MFA device ARN, a space character, and the value that is displayed on your authentication device.",
+        "aws s3api put-bucket-versioning --bucket amzn-s3-demo-bucket1 --versioning-configuration Status=Enabled,MFADelete=Enabled --mfa \"arn:aws:iam::account-id:mfa/root-account-mfa-device 123789\"",
+        "Using MFA delete requires an approved physical or virtual authentication device. For more information about using MFA delete in Amazon S3, see Configuring MFA delete.",
+        "For more information about enabling versioning using the AWS CLI, see put-bucket-versioning in the AWS CLI Command Reference.",
+        "The following examples enable versioning on a bucket and then retrieve versioning status using the AWS SDK for Java and the AWS SDK for .NET. For information about using other AWS SDKs, see the AWS Developer Center.",
+        "For information about setting up and running the code examples, see Getting Started with the AWS SDK for .NET in the AWS SDK for .NET Developer Guide.",
+        "using System; using Amazon.S3; using Amazon.S3.Model; namespace s3.amazon.com.docsamples { class BucketVersioningConfiguration { static string bucketName = \"*** bucket name ***\"; public static void Main(string[] args) { using (var client = new AmazonS3Client(Amazon.RegionEndpoint.USEast1)) { try { EnableVersioningOnBucket(client); string bucketVersioningStatus = RetrieveBucketVersioningConfiguration(client); } catch (AmazonS3Exception amazonS3Exception) { if (amazonS3Exception.ErrorCode != null && (amazonS3Exception.ErrorCode.Equals(\"InvalidAccessKeyId\") || amazonS3Exception.ErrorCode.Equals(\"InvalidSecurity\"))) { Console.WriteLine(\"Check the provided AWS Credentials.\"); Console.WriteLine( \"To sign up for service, go to http://aws.amazon.com/s3\"); } else { Console.WriteLine( \"Error occurred. Message:'{0}' when listing objects\", amazonS3Exception.Message); } } } Console.WriteLine(\"Press any key to continue...\"); Console.ReadKey(); } static void EnableVersioningOnBucket(IAmazonS3 client) { PutBucketVersioningRequest request = new PutBucketVersioningRequest { BucketName = bucketName, VersioningConfig = new S3BucketVersioningConfig { Status = VersionStatus.Enabled } }; PutBucketVersioningResponse response = client.PutBucketVersioning(request); } static string RetrieveBucketVersioningConfiguration(IAmazonS3 client) { GetBucketVersioningRequest request = new GetBucketVersioningRequest { BucketName = bucketName }; GetBucketVersioningResponse response = client.GetBucketVersioning(request); return response.VersioningConfig.Status; } } }",
+        "For instructions on how to create and test a working sample, see Getting Started in the AWS SDK for Java Developer Guide.",
+        "import java.io.IOException; import com.amazonaws.auth.profile.ProfileCredentialsProvider; import com.amazonaws.regions.Region; import com.amazonaws.regions.Regions; import com.amazonaws.services.s3.AmazonS3Client; import com.amazonaws.services.s3.model.AmazonS3Exception; import com.amazonaws.services.s3.model.BucketVersioningConfiguration; import com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest; public class BucketVersioningConfigurationExample { public static String bucketName = \"*** bucket name ***\"; public static AmazonS3Client s3Client; public static void main(String[] args) throws IOException { s3Client = new AmazonS3Client(new ProfileCredentialsProvider()); s3Client.setRegion(Region.getRegion(Regions.US_EAST_1)); try { // 1. Enable versioning on the bucket. BucketVersioningConfiguration configuration = new BucketVersioningConfiguration().withStatus(\"Enabled\"); SetBucketVersioningConfigurationRequest setBucketVersioningConfigurationRequest = new SetBucketVersioningConfigurationRequest(bucketName,configuration); s3Client.setBucketVersioningConfiguration(setBucketVersioningConfigurationRequest); // 2. Get bucket versioning configuration information. BucketVersioningConfiguration conf = s3Client.getBucketVersioningConfiguration(bucketName); System.out.println(\"bucket versioning configuration status: \" + conf.getStatus()); } catch (AmazonS3Exception amazonS3Exception) { System.out.format(\"An Amazon S3 error occurred. Exception: %s\", amazonS3Exception.toString()); } catch (Exception ex) { System.out.format(\"Exception: %s\", ex.toString()); } } }",
+        "The following Python code example creates an Amazon S3 bucket, enables it for versioning, and configures a lifecycle that expires noncurrent object versions after 7 days.",
+        "def create_versioned_bucket(bucket_name, prefix): \"\"\" Creates an Amazon S3 bucket, enables it for versioning, and configures a lifecycle that expires noncurrent object versions after 7 days. Adding a lifecycle configuration to a versioned bucket is a best practice. It helps prevent objects in the bucket from accumulating a large number of noncurrent versions, which can slow down request performance. Usage is shown in the usage_demo_single_object function at the end of this module. :param bucket_name: The name of the bucket to create. :param prefix: Identifies which objects are automatically expired under the configured lifecycle rules. :return: The newly created bucket. \"\"\" try: bucket = s3.create_bucket( Bucket=bucket_name, CreateBucketConfiguration={ \"LocationConstraint\": s3.meta.client.meta.region_name }, ) logger.info(\"Created bucket %s.\", bucket.name) except ClientError as error: if error.response[\"Error\"][\"Code\"] == \"BucketAlreadyOwnedByYou\": logger.warning(\"Bucket %s already exists! Using it.\", bucket_name) bucket = s3.Bucket(bucket_name) else: logger.exception(\"Couldn't create bucket %s.\", bucket_name) raise try: bucket.Versioning().enable() logger.info(\"Enabled versioning on bucket %s.\", bucket.name) except ClientError: logger.exception(\"Couldn't enable versioning on bucket %s.\", bucket.name) raise try: expiration = 7 bucket.LifecycleConfiguration().put( LifecycleConfiguration={ \"Rules\": [ { \"Status\": \"Enabled\", \"Prefix\": prefix, \"NoncurrentVersionExpiration\": {\"NoncurrentDays\": expiration}, } ] } ) logger.info( \"Configured lifecycle to expire noncurrent versions after %s days \" \"on bucket %s.\", expiration, bucket.name, ) except ClientError as error: logger.warning( \"Couldn't configure lifecycle on bucket %s because %s. \" \"Continuing anyway.\", bucket.name, error, ) return bucket"
+      ]
+    },
+    {
+      "id": "replication-requirements",
+      "pageTitle": "Requirements and considerations for replication",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Requirements and considerations for replication",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication-requirements.html",
+      "paragraphs": [
+        "Amazon S3 replication requires the following:",
+        "The source bucket owner must have the source and destination AWS Regions enabled for their account. The destination bucket owner must have the destination Region enabled for their account.",
+        "For more information about enabling or disabling an AWS Region, see Specify which AWS Regions your account can use in the AWS Account Management Reference Guide.",
+        "Both source and destination buckets must have versioning enabled. For more information about versioning, see Retaining multiple versions of objects with S3 Versioning.",
+        "Amazon S3 must have permissions to replicate objects from the source bucket to the destination bucket or buckets on your behalf. For more information about these permissions, see Setting up permissions for live replication.",
+        "If the owner of the source bucket doesn't own the object in the bucket, the object owner must grant the bucket owner READ and READ_ACP permissions with the object access control list (ACL). For more information, see Access control list (ACL) overview.",
+        "If the source bucket has S3 Object Lock enabled, the destination buckets must also have S3 Object Lock enabled.",
+        "To enable replication on a bucket that has Object Lock enabled, you must use the AWS Command Line Interface, REST API, or AWS SDKs. For more general information, see Locking objects with Object Lock.",
+        "You must grant two new permissions on the source S3 bucket in the AWS Identity and Access Management (IAM) role that you use to set up replication. The two new permissions are s3:GetObjectRetention and s3:GetObjectLegalHold. If the role has an s3:Get* permission, it satisfies the requirement. For more information, see Setting up permissions for live replication.",
+        "For more information, see Setting up live replication overview.",
+        "If you are setting the replication configuration in a cross-account scenario, where the source and destination buckets are owned by different AWS accounts, the following additional requirement applies:",
+        "The owner of the destination buckets must grant the owner of the source bucket permissions to replicate objects with a bucket policy. For more information, see (Optional) Step 3: Granting permissions when the source and destination buckets are owned by different AWS accounts.",
+        "The destination buckets cannot be configured as Requester Pays buckets. For more information, see Using Requester Pays general purpose buckets for storage transfers and usage."
+      ]
+    },
+    {
+      "id": "s3-batch-replication-batch",
+      "pageTitle": "Replicating existing objects with Batch Replication",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Replicating existing objects with Batch Replication",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-batch-replication-batch.html",
+      "paragraphs": [
+        "S3 Batch Replication differs from live replication, which continuously and automatically replicates new objects across Amazon S3 buckets. Instead, S3 Batch Replication occurs on demand on existing objects. You can use S3 Batch Replication to replicate the following types of objects:",
+        "Objects that existed before a replication configuration was in place",
+        "Objects that have previously been replicated",
+        "Objects that have failed replication",
+        "You can replicate these objects on demand by using a Batch Operations job.",
+        "To get started with Batch Replication, you can:",
+        "Initiate Batch Replication for a new replication rule or destination – You can create a one-time Batch Replication job when you're creating the first rule in a new replication configuration or when you're adding a new destination bucket to an existing configuration through the Amazon S3 console.",
+        "Initiate Batch Replication for an existing replication configuration – You can create a new Batch Replication job by using S3 Batch Operations through the Amazon S3 console, the AWS Command Line Interface (AWS CLI), the AWS SDKs, or the Amazon S3 REST API.",
+        "When the Batch Replication job finishes, you receive a completion report. For more information about how to use this report to examine the job, see Tracking job status and completion reports."
+      ]
+    },
+    {
+      "id": "s3-batch-replication-completion-report",
+      "pageTitle": "Replicating existing objects with Batch Replication",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Batch Replication completion report",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-batch-replication-batch.html#batch-replication-completion-report",
+      "paragraphs": [
+        "When you create a Batch Replication job, you can request a CSV completion report. This report shows the objects, replication success or failure codes, outputs, and descriptions. For more information about job tracking and completion reports, see Completion reports.",
+        "For a list of replication failure codes and descriptions, see Amazon S3 replication failure reasons.",
+        "For information about troubleshooting Batch Replication, see Batch Replication errors."
+      ]
+    },
+    {
+      "id": "replication-kms-sse-s3-kms-dsse",
+      "pageTitle": "Replicating encrypted objects (SSE-S3, SSE-KMS, DSSE-KMS, SSE-C)",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Replicating objects encrypted with SSE-S3, SSE-KMS, or DSSE-KMS",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication-config-for-kms-objects.html#replications",
+      "paragraphs": [
+        "By default, Amazon S3 doesn't replicate objects that are encrypted with SSE-KMS or DSSE-KMS. This section explains the additional configuration elements that you can add to direct Amazon S3 to replicate these objects.",
+        "For an example with step-by-step instructions, see Enabling replication for encrypted objects. For information about creating a replication configuration, see Replicating objects within and across Regions.",
+        "Specifying additional information in the replication configuration",
+        "In the replication configuration, you do the following:",
+        "In the Destination element in your replication configuration, add the ID of the symmetric AWS KMS customer managed key that you want Amazon S3 to use to encrypt object replicas, as shown in the following example replication configuration.",
+        "Explicitly opt in by enabling replication of objects encrypted by using KMS keys (SSE-KMS or DSSE-KMS). To opt in, add the SourceSelectionCriteria element, as shown in the following example replication configuration.",
+        "<ReplicationConfiguration> <Rule> ... <SourceSelectionCriteria> <SseKmsEncryptedObjects> <Status>Enabled</Status> </SseKmsEncryptedObjects> </SourceSelectionCriteria> <Destination> ... <EncryptionConfiguration> <ReplicaKmsKeyID>AWS KMS key ARN or Key Alias ARN that's in the same AWS Region as the destination bucket.</ReplicaKmsKeyID> </EncryptionConfiguration> </Destination> ... </Rule> </ReplicationConfiguration>",
+        "The KMS key must have been created in the same AWS Region as the destination bucket.",
+        "The KMS key must be valid. The PutBucketReplication API operation doesn't check the validity of KMS keys. If you use a KMS key that isn't valid, you will receive the HTTP 200 OK status code in response, but replication fails.",
+        "The following example shows a replication configuration that includes optional configuration elements. This replication configuration has one rule. The rule applies to objects with the Tax key prefix. Amazon S3 uses the specified AWS KMS key ID to encrypt these object replicas.",
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <ReplicationConfiguration> <Role>arn:aws:iam::account-id:role/role-name</Role> <Rule> <ID>Rule-1</ID> <Priority>1</Priority> <Status>Enabled</Status> <DeleteMarkerReplication> <Status>Disabled</Status> </DeleteMarkerReplication> <Filter> <Prefix>Tax</Prefix> </Filter> <Destination> <Bucket>arn:aws:s3:::amzn-s3-demo-destination-bucket</Bucket> <EncryptionConfiguration> <ReplicaKmsKeyID>AWS KMS key ARN or Key Alias ARN that's in the same AWS Region as the destination bucket.</ReplicaKmsKeyID> </EncryptionConfiguration> </Destination> <SourceSelectionCriteria> <SseKmsEncryptedObjects> <Status>Enabled</Status> </SseKmsEncryptedObjects> </SourceSelectionCriteria> </Rule> </ReplicationConfiguration>",
+        "Granting additional permissions for the IAM role",
+        "To replicate objects that are encrypted at rest by using SSE-S3, SSE-KMS, or DSSE-KMS, grant the following additional permissions to the AWS Identity and Access Management (IAM) role that you specify in the replication configuration. You grant these permissions by updating the permissions policy that's associated with the IAM role.",
+        "s3:GetObjectVersionForReplication action for source objects – This action allows Amazon S3 to replicate both unencrypted objects and objects created with server-side encryption by using SSE-S3, SSE-KMS, or DSSE-KMS.",
+        "We recommend that you use the s3:GetObjectVersionForReplication action instead of the s3:GetObjectVersion action because s3:GetObjectVersionForReplication provides Amazon S3 with only the minimum permissions necessary for replication. In addition, the s3:GetObjectVersion action allows replication of unencrypted and SSE-S3-encrypted objects, but not of objects that are encrypted by using KMS keys (SSE-KMS or DSSE-KMS).",
+        "kms:Decrypt and kms:Encrypt AWS KMS actions for the KMS keys",
+        "You must grant kms:Decrypt permissions for the AWS KMS key that protects the source object.",
+        "You must grant kms:Encrypt permissions for the AWS KMS key that will protect the object replica.",
+        "kms:GenerateDataKey action for replicating plaintext objects – If you're replicating plaintext objects to a bucket with SSE-KMS or DSSE-KMS encryption enabled by default, you must include the kms:GenerateDataKey permission for the destination encryption context and the KMS key in the IAM policy.",
+        "If you use S3 Batch Replication to replicate datasets cross region and your objects previously had their server-side encryption type updated from SSE-S3 to SSE-KMS, you may need additional permissions. On the source region bucket, you must have kms:decrypt permissions. Then, you will need the kms:decrypt and kms:encrypt permissions for the bucket in the destination region.",
+        "We recommend that you restrict these permissions only to the destination buckets and objects by using AWS KMS condition keys. The AWS account that owns the IAM role must have permissions for the kms:Encrypt and kms:Decrypt actions for the KMS keys that are listed in the policy. If the KMS keys are owned by another AWS account, the owner of the KMS keys must grant these permissions to the AWS account that owns the IAM role. For more information about managing access to these KMS keys, see Using IAM policies with AWS KMS in the AWS Key Management Service Developer Guide.",
+        "S3 Bucket Keys and replication",
+        "To use replication with an S3 Bucket Key, the AWS KMS key policy for the KMS key that's used to encrypt the object replica must include the kms:Decrypt permission for the calling principal. The call to kms:Decrypt verifies the integrity of the S3 Bucket Key before using it. For more information, see Using an S3 Bucket Key with replication.",
+        "When an S3 Bucket Key is enabled for the source or destination bucket, the encryption context will be the bucket's Amazon Resource Name (ARN), not the object's ARN (for example, arn:aws:s3:::bucket_ARN). You must update your IAM policies to use the bucket ARN for the encryption context:",
+        "\"kms:EncryptionContext:aws:s3:arn\": [ \"arn:aws:s3:::bucket_ARN\" ]",
+        "For more information, see Encryption context (x-amz-server-side-encryption-context) (in the \"Using the REST API\" section) and Changes to note before enabling an S3 Bucket Key.",
+        "Example policies: Using SSE-S3 and SSE-KMS with replication",
+        "The following example IAM policies show statements for using SSE-S3 and SSE-KMS with replication.",
+        "Example– Using SSE-KMS with separate destination buckets",
+        "The following example policy shows statements for using SSE-KMS with separate destination buckets.",
+        "Example– Replicating objects created with SSE-S3 and SSE-KMS",
+        "The following is a complete IAM policy that grants the necessary permissions to replicate unencrypted objects, objects created with SSE-S3, and objects created with SSE-KMS.",
+        "{ \"Version\":\"2012-10-17\", \"Statement\":[ { \"Effect\":\"Allow\", \"Action\":[ \"s3:GetReplicationConfiguration\", \"s3:ListBucket\" ], \"Resource\":[ \"arn:aws:s3:::amzn-s3-demo-source-bucket\" ] }, { \"Effect\":\"Allow\", \"Action\":[ \"s3:GetObjectVersionForReplication\", \"s3:GetObjectVersionAcl\" ], \"Resource\":[ \"arn:aws:s3:::amzn-s3-demo-source-bucket/key-prefix1*\" ] }, { \"Effect\":\"Allow\", \"Action\":[ \"s3:ReplicateObject\", \"s3:ReplicateDelete\" ], \"Resource\":\"arn:aws:s3:::amzn-s3-demo-destination-bucket/key-prefix1*\" }, { \"Action\":[ \"kms:Decrypt\" ], \"Effect\":\"Allow\", \"Condition\":{ \"StringLike\":{ \"kms:ViaService\":\"s3.us-east-1.amazonaws.com\", \"kms:EncryptionContext:aws:s3:arn\":[ \"arn:aws:s3:::amzn-s3-demo-source-bucket/key-prefix1*\" ] } }, \"Resource\":[ \"arn:aws:kms:us-east-1:111122223333:key/key-id\" ] }, { \"Action\":[ \"kms:Encrypt\" ], \"Effect\":\"Allow\", \"Condition\":{ \"StringLike\":{ \"kms:ViaService\":\"s3.us-east-1.amazonaws.com\", \"kms:EncryptionContext:aws:s3:arn\":[ \"arn:aws:s3:::amzn-s3-demo-destination-bucket/prefix1*\" ] } }, \"Resource\":[ \"arn:aws:kms:us-east-1:111122223333:key/key-id\" ] } ] }",
+        "Example– Replicating objects with S3 Bucket Keys",
+        "The following is a complete IAM policy that grants the necessary permissions to replicate objects with S3 Bucket Keys.",
+        "{ \"Version\":\"2012-10-17\", \"Statement\":[ { \"Effect\":\"Allow\", \"Action\":[ \"s3:GetReplicationConfiguration\", \"s3:ListBucket\" ], \"Resource\":[ \"arn:aws:s3:::amzn-s3-demo-source-bucket\" ] }, { \"Effect\":\"Allow\", \"Action\":[ \"s3:GetObjectVersionForReplication\", \"s3:GetObjectVersionAcl\" ], \"Resource\":[ \"arn:aws:s3:::amzn-s3-demo-source-bucket/key-prefix1*\" ] }, { \"Effect\":\"Allow\", \"Action\":[ \"s3:ReplicateObject\", \"s3:ReplicateDelete\" ], \"Resource\":\"arn:aws:s3:::amzn-s3-demo-destination-bucket/key-prefix1*\" }, { \"Action\":[ \"kms:Decrypt\" ], \"Effect\":\"Allow\", \"Condition\":{ \"StringLike\":{ \"kms:ViaService\":\"s3.us-east-1.amazonaws.com\", \"kms:EncryptionContext:aws:s3:arn\":[ \"arn:aws:s3:::amzn-s3-demo-source-bucket\" ] } }, \"Resource\":[ \"arn:aws:kms:us-east-1:111122223333:key/key-id\" ] }, { \"Action\":[ \"kms:Encrypt\" ], \"Effect\":\"Allow\", \"Condition\":{ \"StringLike\":{ \"kms:ViaService\":\"s3.us-east-1.amazonaws.com\", \"kms:EncryptionContext:aws:s3:arn\":[ \"arn:aws:s3:::amzn-s3-demo-destination-bucket\" ] } }, \"Resource\":[ \"arn:aws:kms:us-east-1:111122223333:key/key-id\" ] } ] }",
+        "Granting additional permissions for cross-account scenarios",
+        "In a cross-account scenario, where the source and destination buckets are owned by different AWS accounts, you can use a KMS key to encrypt object replicas. However, the KMS key owner must grant the source bucket owner permission to use the KMS key.",
+        "If you need to replicate SSE-KMS data cross-account, then your replication rule must specify a customer managed key from AWS KMS for the destination account. AWS managed keys don't allow cross-account use, and therefore can't be used to perform cross-account replication.",
+        "To grant the source bucket owner permission to use the KMS key (AWS KMS console)",
+        "Sign in to the AWS Management Console and open the AWS KMS console at https://console.aws.amazon.com/kms.",
+        "To change the AWS Region, use the Region selector in the upper-right corner of the page.",
+        "To view the keys in your account that you create and manage, in the navigation pane choose Customer managed keys.",
+        "Choose the KMS key.",
+        "Under the General configuration section, choose the Key policy tab.",
+        "Scroll down to Other AWS accounts.",
+        "Choose Add other AWS accounts.",
+        "The Other AWS accounts dialog box appears.",
+        "In the dialog box, choose Add another AWS account. For arn:aws:iam::, enter the source bucket account ID.",
+        "Choose Save changes.",
+        "To grant the source bucket owner permission to use the KMS key (AWS CLI)",
+        "For information about the put-key-policy AWS Command Line Interface (AWS CLI) command, see put-key-policy in the AWS CLI Command Reference. For information about the underlying PutKeyPolicy API operation, see PutKeyPolicy in the AWS Key Management Service API Reference.",
+        "AWS KMS transaction quota considerations",
+        "When you add many new objects with AWS KMS encryption after enabling Cross-Region Replication (CRR), you might experience throttling (HTTP 503 Service Unavailable errors). Throttling occurs when the number of AWS KMS transactions per second exceeds the current quota. For more information, see Quotas in the AWS Key Management Service Developer Guide.",
+        "To request a quota increase, use Service Quotas. For more information, see Requesting a quota increase. If Service Quotas isn't supported in your Region, open an AWS Support case."
+      ]
+    },
+    {
+      "id": "replication-kms-sse-c",
+      "pageTitle": "Replicating encrypted objects (SSE-S3, SSE-KMS, DSSE-KMS, SSE-C)",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Replicating objects encrypted with SSE-C",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication-config-for-kms-objects.html#replicationSSEC",
+      "paragraphs": [
+        "By using server-side encryption with customer-provided keys (SSE-C), you can manage your own proprietary encryption keys. With SSE-C, you manage the keys while Amazon S3 manages the encryption and decryption process. You must provide an encryption key as part of your request, but you don't need to write any code to perform object encryption or decryption. When you upload an object, Amazon S3 encrypts the object by using the key that you provided. Amazon S3 then purges that key from memory. When you retrieve an object, you must provide the same encryption key as part of your request. For more information, see Using server-side encryption with customer-provided keys (SSE-C).",
+        "S3 Replication supports objects that are encrypted with SSE-C. You can configure SSE-C object replication in the Amazon S3 console or with the AWS SDKs in the same way that you configure replication for unencrypted objects. There aren't additional SSE-C permissions beyond what are currently required for replication.",
+        "S3 Replication automatically replicates newly uploaded SSE-C encrypted objects if they are eligible, as specified in your S3 Replication configuration. To replicate existing objects in your buckets, use S3 Batch Replication. For more information about replicating objects, see Setting up live replication overview and Replicating existing objects with Batch Replication.",
+        "There are no additional charges for replicating SSE-C objects. For details about replication pricing, see Amazon S3 pricing."
+      ]
+    },
+    {
+      "id": "cost-example-1-s3-pricing",
+      "pageTitle": "Cost example 1",
+      "guideName": "Live Streaming on AWS with Amazon S3 Implementation Guide",
+      "sectionHeading": "Amazon S3 pricing",
+      "url": "https://docs.aws.amazon.com/solutions/latest/live-streaming-on-aws-with-amazon-s3/cost-example-1.html#amazon-s3-pricing",
+      "paragraphs": [
+        "Amazon S3 charges $0.023 per Gigabyte (GB) per month for the first 50 Terabytes (TB) stored in the bucket. The volume of storage billed in a month is based on the average storage used throughout the month. This can be determined by size of objects and how long they are stored. For this example, 21 segments for 4 bitrates are stored at all times. The cost of storage per hour is as follows:",
+        "Add the bitrate of all streams in Kbps:",
+        "400k + 800k + 1,200k + 1,800k = 4,200 Kbps",
+        "Calculate size of four-second segment (for all bitrates combined):",
+        "4,200 Kbps * 4 seconds = 16,800 Kb",
+        "Total size of segments stored at a time:",
+        "16,800 Kb * 21 segments = 352,800 Kb",
+        "Total Kb-hour usage:",
+        "352,800 Kb * 1 hour storage = 352,800 Kb-hours",
+        "Convert to GB-months:",
+        "352,800 Kb-hours / 8 bits per byte / 1,000,000 Kb per GB / 744 hours in month = 0.00006 GB-months",
+        "0.00006 GB-months * $0.023 = $0.000001 per hour of storage",
+        "The cost will continue to accumulate per hour as long as the objects are not removed from the bucket. Cost of storage is billed monthly.",
+        "Table 3: Amazon S3 storage pricing",
+        "Input / output | Kbps",
+        "Output 1 SD (512x288, 400k) | 400",
+        "Output 2 SD (640x360, 800k) | 800",
+        "Output 3 SD (768x432, 1,200k) | 1,200",
+        "Output 4 SD (960x540, 1,800k) | 1,800",
+        "Total Kbps: | 4,200",
+        "Compute total Kb stored 4200 kbps * 4 seconds * 21 segments | 352,800 Kb",
+        "GB-month usage for one hour | 0.00006 GB",
+        "Cost (GB/hour *$0.023) | $0.000001/hour",
+        "Amazon S3 charges $0.005 per 1,000 requests for PUT, COPY, POST, and LIST requests. This example has four input streams, so the number of requests can be approximated by the following:",
+        "Calculate the number of segments:",
+        "3,600 seconds of content / 4 second segments = 900 segments",
+        "900 segments * 4 input streams = 3,600 segments",
+        "Calculate the number of manifest updates:",
+        "4 input streams * 3,600 seconds of content / updates every 4 seconds = 3,600 manifest updates",
+        "Add total segments to total manifest updates to get the number of PUT requests:",
+        "3,600 + 3,600 = 7,200 PUT requests per hour",
+        "Table 4: Amazon S3 request pricing",
+        "Request | Quantity",
+        "PUT ts segments | 3,600",
+        "PUT manifest files | 3,600",
+        "Total requests: | 7,200",
+        "Cost (total requests/1000 * $0.005) | $0.036/hour",
+        "Data transfers from S3 to Amazon CloudFront are free of charge."
+      ]
+    },
+    {
+      "id": "dx-exporting-revisions",
+      "pageTitle": "Exporting revisions from AWS Data Exchange",
+      "guideName": "AWS Data Exchange User Guide",
+      "sectionHeading": "Exporting revisions from AWS Data Exchange",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/userguide/exporting-revisions.html",
+      "paragraphs": [
+        "Both providers and subscribers can export revisions of a data set to an S3 bucket that they have permissions to access.",
+        "AWS Data Exchange supports configurable encryption parameters when exporting revisions to Amazon S3. In your export job details, you can specify the Amazon S3 server-side encryption configuration that you want to apply to the exported objects. You can choose to use server-side encryption with Amazon S3-Managed Keys (SSE-S3) or server-side encryption with KMS keys stored in AWS Key Management Service (SSE-KMS). For more information, see Protecting data using server-side encryption in the Amazon Simple Storage Service Developer Guide.",
+        "If the provider has marked a product as containing protected health information (PHI) subject to the Health Insurance Portability and Accountability Act of 1996 (HIPAA), you may not export the product's data sets into your AWS account unless such AWS account is designated as a HIPAA account (as defined in the AWS Business Associate Addendum found in AWS Artifact).",
+        "The following video explains more about how to export assets from AWS Data Exchange (starting at 2:18)."
+      ]
+    },
+    {
+      "id": "dx-exporting-assets",
+      "pageTitle": "Exporting assets from AWS Data Exchange",
+      "guideName": "AWS Data Exchange User Guide",
+      "sectionHeading": "Exporting assets from AWS Data Exchange",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/userguide/exporting-assets.html",
+      "paragraphs": [
+        "Both providers and subscribers can export data sets from a published revision of a product in AWS Data Exchange. You can export these assets to an S3 bucket, or to a signed URL. The following sections describe how to do this."
+      ]
+    },
+    {
+      "id": "dx-revision-export-keypatterns",
+      "pageTitle": "Key patterns when exporting asset revisions from AWS Data Exchange",
+      "guideName": "AWS Data Exchange User Guide",
+      "sectionHeading": "Key patterns when exporting asset revisions from AWS Data Exchange",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/userguide/revision-export-keypatterns.html",
+      "paragraphs": [
+        "When you export an asset revision from AWS Data Exchange, each asset becomes an object in the S3 bucket. The names of the objects are based on a key pattern that you provide. You can use dynamic references that represent asset attributes to create a pattern for the names that are automatically generated during the export. Use the dynamic references shown in the following table.",
+        "Dynamic references | Description",
+        "${Asset.Id} | The Id of the asset.",
+        "${Asset.Name} | The name of the asset.",
+        "${DataSet.Id} | The Id of the data set being exported.",
+        "${DataSet.Name} | The name of the data set being exported.",
+        "${Revision.CreatedAt} | The UTC date and time the revision was created, in the following format: YYYY-MM-DDTHH:MM:SSZ. For example: 2021-10-08T16:33:19.787Z",
+        "${Revision.CreatedAt.Day} | The day of the month the revision was created.",
+        "${Revision.CreatedAt.Month} | The month the revision was created.",
+        "${Revision.CreatedAt.Year} | The year the revision was created.",
+        "${Revision.Id} | The Id of the revision being exported.",
+        "You can use these dynamic references to create the key patterns for your asset names. You must include at least one of the two Asset dynamic references, which are ${Asset.Name} and ${Asset.Id}.",
+        "For example, using ${Revision.Id}/${Asset.Name} as a key pattern results in Amazon S3 objects that use the revision Id and asset name (separated by a slash) as the object name.",
+        "If you export a revision with the Id testRevisionId that has two assets named asset1 and asset2, the assets are exported to the following locations in Amazon S3:",
+        "<bucket>/testRevisionId/asset1",
+        "<bucket>/testRevisionId/asset2",
+        "Your resulting objects must have unique names. If they have the same names as existing objects in the S3 bucket, your export will overwrite existing objects. If the revision you are exporting has non-unique names (for example, two assets with the same name), the export will fail. The only dynamic reference that is unique is ${Asset.Id}."
+      ]
+    },
+    {
+      "id": "dx-auto-export",
+      "pageTitle": "Automatically exporting AWS Data Exchange asset revisions to an S3 bucket as a subscriber",
+      "guideName": "AWS Data Exchange User Guide",
+      "sectionHeading": "Automatically exporting AWS Data Exchange asset revisions to an S3 bucket as a subscriber",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/userguide/auto-export-rev-s3-console-sub.html",
+      "paragraphs": [
+        "When the provider publishes new revisions, you can select to automatically export new revisions to your Amazon S3 bucket. You can export new revisions to up to five S3 buckets. New revisions will automatically appear in the S3 buckets you have selected.",
+        "To automatically export revisions to an S3 bucket of your choice, your S3 bucket must have a bucket policy with permissions set to allow AWS Data Exchange to export data into it. For more information, see Prerequisites for S3 bucket policy permissions."
+      ]
+    },
+    {
+      "id": "dx-auto-export-console",
+      "pageTitle": "Automatically exporting AWS Data Exchange asset revisions to an S3 bucket as a subscriber",
+      "guideName": "AWS Data Exchange User Guide",
+      "sectionHeading": "Automatically exporting revisions to an S3 bucket as a subscriber (console)",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/userguide/auto-export-rev-s3-console-sub.html#auto-export-rev-s3-console-sub-proc",
+      "paragraphs": [
+        "To automatically export revisions to an S3 bucket of your choice, your S3 bucket must have a bucket policy with permissions set to allow AWS Data Exchange to export data into it. For more information, see Prerequisites for S3 bucket policy permissions.",
+        "To automatically export a revision to an S3 bucket as a subscriber (console)",
+        "Open your web browser and sign in to the AWS Data Exchange console.",
+        "In the left side navigation pane, for My subscriptions, choose Entitled data.",
+        "In Entitled data, choose the product that has the revision you want to export.",
+        "In Entitled data sets, choose the data set.",
+        "On the Revisions tab, under Auto-export job destinations, choose Actions and then choose Add auto-export job destination.",
+        "In Add auto-export job destination, choose either the Simple or Advanced destination option.",
+        "If you choose the Simple option, select the Amazon S3 bucket folder destination from the dropdown list and the encryption options, and then choose Add bucket destination.",
+        "If you choose the Advanced option, select the Amazon S3 bucket folder destination from the dropdown list, select the Key naming pattern and append it to the path.",
+        "Review the Output.",
+        "Set the Encryption options, review the Amazon S3 pricing, and then choose Add bucket destination.",
+        "The Amazon S3 bucket destination appears on the Revisions tab under Auto-export job destinations.",
+        "A job is started to automatically export your revision.",
+        "To verify that the prerequisites for S3 bucket policy permissions are met, an object with the naming format _ADX-TEST-ACCOUNTID# is added to the S3 bucket.",
+        "After the job is finished, the State field in the Jobs section is updated to Completed.",
+        "To add another destination, choose Actions, and then Add auto-export job destination.",
+        "To edit, select the destination you want to edit, choose Actions, and then Edit destination configuration.",
+        "To delete, choose Actions, and then choose Remove auto-export job destination."
+      ]
+    },
+    {
+      "id": "dx-accepting-data-grants",
+      "pageTitle": "Accepting data grants and accessing data on AWS Data Exchange",
+      "guideName": "AWS Data Exchange User Guide",
+      "sectionHeading": "Accepting data grants and accessing data on AWS Data Exchange",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/userguide/accepting-data-grants-and-accessing-data.html",
+      "paragraphs": [
+        "The following steps describe the process of accepting a data grant on AWS Data Exchange using the AWS Data Exchange console:",
+        "Accepting a data grant",
+        "You must sign up for an AWS account and create a user before you can accept a data grant. For more information see Sign up for an AWS account.",
+        "In the left navigation pane of the AWS Data Exchange console, under Exchanged data grants, choose Received data grants.",
+        "Any data grants in which your AWS account is the receiver of will appear in the table under the tab of Pending data grants showing the pending data grant details with the status of Pending acceptance.",
+        "To accept a data grant, select the check box next to the data grant you wish to approve, and choose Accept data grant.",
+        "When the acceptance of the data grant has completed processing, the data grant will appear under the Accepted and expired data grants tab showing the data grant details with the status of Accepted.",
+        "After the acceptance of the data grant, choose the data grant name from the Entitled data sets table to access the data. You can also navigate to the Entitled data page from My data to view your data grant and to view all data sets shared with your account.",
+        "Next, use the included data sets. You can take any of the following actions depending on the type of data set you have access to:",
+        "Export the associated files to your Amazon Simple Storage Service (Amazon S3) or locally through a signed URL.",
+        "Call the Amazon API Gateway API.",
+        "Query the Amazon Redshift data share.",
+        "Access the Amazon S3 data.",
+        "Query the AWS Lake Formation data lake (Preview).",
+        "When you accept a data grant, you agree that your use of the underlying data set remains subject to the AWS Customer Agreement or other agreement with AWS governing your use of such services."
+      ]
+    },
+    {
+      "id": "dx-data-grant-file-based",
+      "pageTitle": "Access an AWS Data Exchange data set containing file-based data",
+      "guideName": "AWS Data Exchange User Guide",
+      "sectionHeading": "Access an AWS Data Exchange data set containing file-based data",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/userguide/data-grant-access-file-based-data.html",
+      "paragraphs": [
+        "The following topics describe the process of accessing a data set containing file-based data stored as files on AWS Data Exchange. To complete the process, use the AWS Data Exchange console.",
+        "After you successfully accept a data grant, you will have access to the data set include in it.",
+        "To view the data sets, revisions, and assets",
+        "Open your web browser and sign in to the AWS Data Exchange console.",
+        "In the left side navigation pane, under My data, choose Entitled data sets.",
+        "Choose a data set.",
+        "View the Data set overview, Auto-export destinations (Amazon S3 data sets only), the Revisions, and the Description of the data set."
+      ]
+    },
+    {
+      "id": "dx-data-grant-file-based-exporting",
+      "pageTitle": "Access an AWS Data Exchange data set containing file-based data",
+      "guideName": "AWS Data Exchange User Guide",
+      "sectionHeading": "(Optional) Exporting data",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/userguide/data-grant-access-file-based-data.html#data-grant-access-file-based-data-exporting",
+      "paragraphs": [
+        "After your data grant is active, you can set up your Amazon S3 bucket to receive assets that you export. You can export the associated assets to Amazon S3 or you can use jobs with a signed URL.",
+        "If you want to export or download your data at a later time, including getting new revisions, see Exporting assets from AWS Data Exchange.",
+        "We recommend that you consider Amazon S3 security features when exporting data to Amazon S3. For more information about general guidelines and best practices, see Security best practices for Amazon S3 in the Amazon Simple Storage Service User Guide.",
+        "For more information about how to export data, see Exporting assets from AWS Data Exchange and Exporting revisions from AWS Data Exchange."
+      ]
+    },
+    {
+      "id": "dx-api-TagResource-syntax",
+      "pageTitle": "TagResource",
+      "guideName": "AWS Data Exchange API Reference",
+      "sectionHeading": "Request Syntax",
+      "url": "https://docs.aws.amazon.com/data-exchange/latest/apireference/API_TagResource.html#API_TagResource_RequestSyntax",
+      "paragraphs": [
+        "POST /tags/ResourceArn HTTP/1.1 Content-type: application/json { \"tags\": { \"string\" : \"string\" } }"
+      ]
+    },
+    {
+      "id": "s3control-api-TagResource-syntax",
+      "pageTitle": "TagResource",
+      "guideName": "Amazon S3 API Reference",
+      "sectionHeading": "Request Syntax",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_TagResource.html#API_control_TagResource_RequestSyntax",
+      "paragraphs": [
+        "POST /v20180820/tags/resourceArn+ HTTP/1.1 Host: s3-control.amazonaws.com x-amz-account-id: AccountId <?xml version=\"1.0\" encoding=\"UTF-8\"?> <TagResourceRequest xmlns=\"http://awss3control.amazonaws.com/doc/2018-08-20/\"> <Tags> <Tag> <Key>string</Key> <Value>string</Value> </Tag> </Tags> </TagResourceRequest>"
       ]
     }
   ]
