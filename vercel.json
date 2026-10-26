@@ -1,0 +1,9 @@
+{
+  "framework": "vite",
+  "devCommand": "vite --port $PORT",
+  "functions": {
+    "api/answer.js": {
+      "supportsCancellation": true
+    }
+  }
+}

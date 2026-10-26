@@ -1,0 +1,74 @@
+{
+  "source": "Live Amazon S3 User Guide pages",
+  "sections": [
+    {
+      "id": "UsingEncryption",
+      "pageTitle": "Protecting data with encryption",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Protecting data with encryption",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingEncryption.html#UsingEncryption",
+      "paragraphs": [
+        "Amazon S3 now applies server-side encryption with Amazon S3 managed keys (SSE-S3) as the base level of encryption for every bucket in Amazon S3. Starting January 5, 2023, all new object uploads to Amazon S3 are automatically encrypted at no additional cost and with no impact on performance. The automatic encryption status for S3 bucket default encryption configuration and for new object uploads is available in CloudTrail logs, S3 Inventory, S3 Storage Lens, the Amazon S3 console, and as an additional Amazon S3 API response header in the AWS CLI and AWS SDKs. For more information, see Default encryption FAQ.",
+        "Data protection refers to protecting data while it's in transit (as it travels to and from Amazon S3) and at rest (while it is stored on disks in Amazon S3 data centers). You can protect data in transit by using Secure Socket Layer/Transport Layer Security (SSL/TLS) including hybrid post-quantum key exchange or client-side encryption. For protecting data at rest in Amazon S3, you have the following options:",
+        "Server-side encryption – Amazon S3 encrypts your objects before saving them on disks in AWS data centers and then decrypts the objects when you download them. All Amazon S3 buckets have encryption configured by default, and all new objects that are uploaded to an S3 bucket are automatically encrypted at rest. Server-side encryption with Amazon S3 managed keys (SSE-S3) is the default encryption configuration for every bucket in Amazon S3. To use a different type of encryption, you can either specify the type of server-side encryption to use in your S3 PUT requests, or you can update the default encryption configuration in the destination bucket. If you want to specify a different encryption type in your PUT requests, you can use server-side encryption with AWS Key Management Service (AWS KMS) keys (SSE-KMS), dual-layer server-side encryption with AWS KMS keys (DSSE-KMS), or server-side encryption with customer-provided keys (SSE-C). If you want to set a different default encryption configuration in the destination bucket, you can use SSE-KMS or DSSE-KMS. For more information about changing the default encryption configuration for your general purpose buckets, see Configuring default encryption. When you change the default encryption configuration of your bucket to SSE-KMS, the encryption type of the existing Amazon S3 objects in the bucket is not changed. To change the encryption type of your pre-existing objects after updating the default encryption configuration to SSE-KMS, you can use Amazon S3 Batch Operations. You provide S3 Batch Operations with a list of objects, and Batch Operations calls the respective API operation. You can use the Copy objects action to copy existing objects, which writes them back to the same bucket as SSE-KMS encrypted objects. A single Batch Operations job can perform the specified operation on billions of objects. For more information, see Performing object operations in bulk with Batch Operations and the AWS Storage Blog post How to retroactively encrypt existing objects in Amazon S3 using S3 Inventory, Amazon Athena, and S3 Batch Operations. For more information about each option for server-side encryption, see Protecting data with server-side encryption. To configure server-side encryption, see:",
+        "Specifying server-side encryption with Amazon S3 managed keys (SSE-S3)",
+        "Specifying server-side encryption with AWS KMS (SSE-KMS)",
+        "Specifying dual-layer server-side encryption with AWS KMS keys (DSSE-KMS)",
+        "Specifying server-side encryption with customer-provided keys (SSE-C)",
+        "Client-side encryption – You encrypt your data client-side and upload the encrypted data to Amazon S3. In this case, you manage the encryption process, encryption keys, and related tools. To configure client-side encryption, see Protecting data by using client-side encryption.",
+        "To see which percentage of your storage bytes are encrypted, you can use Amazon S3 Storage Lens metrics. S3 Storage Lens is a cloud-storage analytics feature that you can use to gain organization-wide visibility into object-storage usage and activity. For more information, see Assessing your storage activity and usage with S3 Storage Lens. For a complete list of metrics, see S3 Storage Lens metrics glossary.",
+        "For more information about server-side encryption, client-side encryption, and encryption in transit, review the following topics."
+      ]
+    },
+    {
+      "id": "UsingKMSEncryption",
+      "pageTitle": "Using server-side encryption with AWS KMS keys (SSE-KMS)",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Using server-side encryption with AWS KMS keys (SSE-KMS)",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html#UsingKMSEncryption",
+      "paragraphs": [
+        "Amazon S3 now applies server-side encryption with Amazon S3 managed keys (SSE-S3) as the base level of encryption for every bucket in Amazon S3. Starting January 5, 2023, all new object uploads to Amazon S3 are automatically encrypted at no additional cost and with no impact on performance. The automatic encryption status for S3 bucket default encryption configuration and for new object uploads is available in CloudTrail logs, S3 Inventory, S3 Storage Lens, the Amazon S3 console, and as an additional Amazon S3 API response header in the AWS CLI and AWS SDKs. For more information, see Default encryption FAQ.",
+        "Server-side encryption is the encryption of data at its destination by the application or service that receives it.",
+        "Amazon S3 automatically enables server-side encryption with Amazon S3 managed keys (SSE-S3) for new object uploads.",
+        "Unless you specify otherwise, buckets use SSE-S3 by default to encrypt objects. However, you can choose to configure buckets to use server-side encryption with AWS Key Management Service (AWS KMS) keys (SSE-KMS) instead. For more information, see Specifying server-side encryption with AWS KMS (SSE-KMS).",
+        "AWS KMS is a service that combines secure, highly available hardware and software to provide a key management system scaled for the cloud. Amazon S3 uses server-side encryption with AWS KMS (SSE-KMS) to encrypt your S3 object data. Also, when SSE-KMS is requested for the object, the S3 checksum (as part of the object's metadata) is stored in encrypted form. For more information about checksum, see Checking object integrity in Amazon S3.",
+        "If you use KMS keys, you can use AWS KMS through the AWS Management Console or the AWS KMS API to do the following:",
+        "Centrally create, view, edit, monitor, enable or disable, rotate, and schedule deletion of KMS keys.",
+        "Define the policies that control how and by whom KMS keys can be used.",
+        "Audit KMS key usage for correct use. Auditing is supported by the AWS KMS API but not by the AWS KMS Console;.",
+        "The security controls in AWS KMS can help you meet encryption-related compliance requirements. You can use these KMS keys to protect your data in Amazon S3 buckets. When you use SSE-KMS encryption with an S3 bucket, the AWS KMS keys must be in the same Region as the bucket.",
+        "There are additional charges for using AWS KMS keys. For more information, see AWS KMS key concepts in the AWS Key Management Service Developer Guide and AWS KMS pricing.",
+        "For instructions on allowing IAM users to access KMS-encrypted buckets see My Amazon S3 bucket has default encryption using a custom AWS KMS key. How can I allow users to download from and upload to the bucket? in the AWS re:Post Knowledge Center.",
+        "Permissions",
+        "To successfully make a PutObject request to encrypt an object with an AWS KMS key to Amazon S3, you need kms:GenerateDataKey permissions on the key. To download an object encrypted with an AWS KMS key, you need kms:Decrypt permissions for the key. To perform a multipart upload to encrypt an object with an AWS KMS key, you must have the kms:GenerateDataKey and kms:Decrypt permissions for the key.",
+        "Carefully review the permissions that are granted in your KMS key policies. Always restrict customer-managed KMS key policy permissions only to the IAM principals and AWS services that must access the relevant AWS KMS key action. For more information, see Key policies in AWS KMS.",
+        "If a bucket is used as a destination for Amazon S3 server access logging, the destination bucket must use Amazon S3 managed keys (SSE-S3). If the destination bucket uses SSE-KMS default encryption, Amazon S3 might deliver log objects that are encrypted with a key that you can't access. To resolve this, change the destination bucket's default encryption to SSE-S3. For more information, see Enabling Amazon S3 server access logging."
+      ]
+    },
+    {
+      "id": "UsingDSSEncryption",
+      "pageTitle": "Using dual-layer server-side encryption with AWS KMS keys (DSSE-KMS)",
+      "guideName": "Amazon Simple Storage Service User Guide",
+      "sectionHeading": "Using dual-layer server-side encryption with AWS KMS keys (DSSE-KMS)",
+      "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingDSSEncryption.html#UsingDSSEncryption",
+      "paragraphs": [
+        "Using dual-layer server-side encryption with AWS Key Management Service (AWS KMS) keys (DSSE-KMS) applies two layers of encryption to objects when they are uploaded to Amazon S3. DSSE-KMS helps you more easily fulfill compliance standards that require you to apply multilayer encryption to your data and have full control of your encryption keys.",
+        "The \"dual\" in DSSE-KMS refers to two independent layers of AES-256 encryption that are applied to your data:",
+        "First layer: Your data is encrypted using a unique data encryption key (DEK) generated by AWS KMS",
+        "Second layer: The already-encrypted data is encrypted again using a separate AES-256 encryption key managed by Amazon S3",
+        "This differs from standard SSE-KMS, which applies only a single layer of encryption. The dual-layer approach provides enhanced security by ensuring that even if one encryption layer were compromised, your data would remain protected by the second layer. This additional security comes with increased processing overhead and AWS KMS API calls, which accounts for the higher cost compared to standard SSE-KMS. For more information about DSSE-KMS pricing, see AWS KMS key concepts in the AWS Key Management Service Developer Guide and AWS KMS pricing.",
+        "When you use DSSE-KMS with an Amazon S3 bucket, the AWS KMS keys must be in the same Region as the bucket. Also, when DSSE-KMS is requested for the object, the S3 checksum that's part of the object's metadata is stored in encrypted form. For more information about checksums, see Checking object integrity in Amazon S3.",
+        "S3 Bucket Keys aren't supported for DSSE-KMS.",
+        "The key differences between DSSE-KMS and standard SSE-KMS are:",
+        "Encryption layers: DSSE-KMS applies two independent layers of AES-256 encryption, while standard SSE-KMS applies one layer",
+        "Security: DSSE-KMS provides enhanced protection against potential encryption vulnerabilities",
+        "Compliance: DSSE-KMS helps meet regulatory requirements that mandate multilayer encryption",
+        "Performance: DSSE-KMS has slightly higher latency due to additional encryption processing",
+        "Cost: DSSE-KMS incurs higher charges due to increased computational overhead and additional AWS KMS operations",
+        "Requiring dual-layer server-side encryption with AWS KMS keys (DSSE-KMS)",
+        "To require dual-layer server-side encryption of all objects in a particular Amazon S3 bucket, you can use a bucket policy. For example, the following bucket policy denies the upload object (s3:PutObject) permission to everyone if the request does not include an x-amz-server-side-encryption header that requests server-side encryption with DSSE-KMS.",
+        "{ \"Version\":\"2012-10-17\", \"Id\": \"PutObjectPolicy\", \"Statement\": [{ \"Sid\": \"DenyUnEncryptedObjectUploads\", \"Effect\": \"Deny\", \"Principal\": { \"AWS\": \"arn:aws:iam::111122223333:root\" }, \"Action\": \"s3:PutObject\", \"Resource\": \"arn:aws:s3:::amzn-s3-demo-bucket/*\", \"Condition\": { \"StringNotEquals\": { \"s3:x-amz-server-side-encryption\": \"aws:kms:dsse\" } } } ] }"
+      ]
+    }
+  ]
+}

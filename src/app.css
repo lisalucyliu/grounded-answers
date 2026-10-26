@@ -1,0 +1,41 @@
+/* Layout only. Colors and spacing come from Cloudscape components and design tokens. */
+
+/* The page itself doesn't scroll. The conversation scrolls above a pinned prompt input. */
+body {
+  overflow: hidden;
+}
+
+.ga-tab-body {
+  display: flex;
+  align-items: flex-start;
+}
+
+.ga-rail {
+  flex: none;
+}
+
+/* --ga-main-top is measured in App.jsx: where the main column starts on screen. */
+.ga-main {
+  flex: 1;
+  min-width: 0;
+  height: calc(100dvh - var(--ga-main-top, 0px));
+  display: flex;
+  flex-direction: column;
+}
+
+.ga-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ga-prompt {
+  flex: none;
+}
+
+/* Cloudscape's "s" breakpoint. Below it there's no room for the rail. */
+@media (max-width: 688px) {
+  .ga-rail {
+    display: none;
+  }
+}
