@@ -35,6 +35,8 @@ import Response, { ERROR_MESSAGE, STOPPED_MESSAGE } from './Response.jsx';
 import SourcesIcon, { SourcesFilledIcon } from './SourcesIcon.jsx';
 import SourcesPanel from './SourcesPanel.jsx';
 import { splitSources, streamAnswer } from './streamAnswer.js';
+import { CLARIFY_QUESTION, chatHistory, decideFollowUp, resolvePick, visibleLists } from './followUp.js';
+import ClarifyResponse from './ClarifyResponse.jsx';
 
 let nextTurnId = 1;
 
@@ -118,7 +120,8 @@ export default function App() {
     setTurns((current) => current.map((turn) => (turn.id === turnId ? { ...turn, ...change(turn) } : turn)));
   }
 
-  async function run(turnId, question) {
+  // history: the turns before this one, as { question, answer }. resolved: the list item code resolved, or null.
+  async function run(turnId, question, { history, resolved }) {
     const controller = new AbortController();
     activeRequest.current = { controller, turnId };
     setGenerating(true);
@@ -129,6 +132,8 @@ export default function App() {
     let answerText = '';
     try {
       await streamAnswer(question, {
+        history,
+        resolved,
         signal: controller.signal,
         onEvent: (event) => {
           if (!isCurrent()) return;
@@ -156,7 +161,7 @@ export default function App() {
       });
       if (isCurrent()) {
         updateTurn(turnId, () => ({ status: 'complete' }));
-        setAnnouncement(answerText.trim()); // Cloudscape: announce each new message.
+        setAnnouncement(`${resolved?.opening ?? ''}${answerText}`.trim()); // Cloudscape: announce each new message.
       }
     } catch (error) {
       // A stop already set the stopped state. Anything else is a real failure.
@@ -173,11 +178,31 @@ export default function App() {
     }
   }
 
-  function ask(question) {
-    const turn = { id: nextTurnId++, attempt: 1, question, status: 'loading', blocks: {}, sections: [], regenerated: false };
+  // A new question. GA-5: if it names a list position, code resolves the item or asks which one.
+  // A pick from "Which option do you mean?" passes its resolved item directly.
+  function ask(question, picked = null) {
+    const decision = picked ? { kind: 'resolved', resolved: picked } : decideFollowUp(question, visibleLists(turns));
     followNewText.current = true;
+    if (decision.kind === 'clarify') {
+      // Code writes this turn. No request to Claude.
+      const turn = { id: nextTurnId++, kind: 'clarify', question, items: decision.items, status: 'clarify', blocks: {}, sections: [] };
+      setTurns((current) => [...current, turn]);
+      setSearchText(question);
+      // Clear first, so a second GA-5c question in a row still changes the live region and is announced.
+      setAnnouncement('');
+      setTimeout(() => setAnnouncement(CLARIFY_QUESTION));
+      return;
+    }
+    const resolved = decision.kind === 'resolved' ? decision.resolved : null;
+    const turn = { id: nextTurnId++, attempt: 1, question, resolved, status: 'loading', blocks: {}, sections: [], regenerated: false };
     setTurns((current) => [...current, turn]);
-    run(turn.id, question);
+    run(turn.id, question, { history: chatHistory(turns), resolved });
+  }
+
+  function pick(clarifyTurn, index) {
+    if (generating) return;
+    const resolved = resolvePick(clarifyTurn.items, index);
+    ask(resolved.name, resolved);
   }
 
   function rerun(turn, { regenerate }) {
@@ -190,7 +215,8 @@ export default function App() {
       attempt: current.attempt + 1,
       regenerated: current.regenerated || regenerate,
     }));
-    run(turn.id, turn.question);
+    const earlier = turns.slice(0, turns.findIndex((candidate) => candidate.id === turn.id));
+    run(turn.id, turn.question, { history: chatHistory(earlier), resolved: turn.resolved });
   }
 
   function stop() {
@@ -309,14 +335,18 @@ export default function App() {
                             >
                               {turn.question}
                             </ChatBubble>
-                            <Response
-                              key={`${turn.id}-${turn.attempt}`}
-                              turn={turn}
-                              canRegenerate={turn === lastTurn && turn.status === 'stopped' && !turn.regenerated}
-                              onRegenerate={() => rerun(turn, { regenerate: true })}
-                              onTryAgain={() => rerun(turn, { regenerate: false })}
-                              onViewAllSources={(restoreFocus) => openSources(turn, restoreFocus)}
-                            />
+                            {turn.kind === 'clarify' ? (
+                              <ClarifyResponse turn={turn} onPick={(index) => pick(turn, index)} />
+                            ) : (
+                              <Response
+                                key={`${turn.id}-${turn.attempt}`}
+                                turn={turn}
+                                canRegenerate={turn === lastTurn && turn.status === 'stopped' && !turn.regenerated}
+                                onRegenerate={() => rerun(turn, { regenerate: true })}
+                                onTryAgain={() => rerun(turn, { regenerate: false })}
+                                onViewAllSources={(restoreFocus) => openSources(turn, restoreFocus)}
+                              />
+                            )}
                           </SpaceBetween>
                         ))}
                       </SpaceBetween>

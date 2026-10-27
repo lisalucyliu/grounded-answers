@@ -27,3 +27,5 @@ The 25 sections in `data/docs.json` were picked with these questions in view. 19
 - `dx-auto-export-console`: Automatically exporting revisions to an S3 bucket as a subscriber (console)
 
 Follow-up test FU: ask F1, wait for the full response, then ask "Tell me more about the third one." in the same chat. Pass = the response names DSSE-KMS and answers about it.
+
+Grading FU on our build: since GA-5, code writes the opening ("The third one, DSSE-KMS: "), so the name is always right. Grade FU on the body after the opening: does it answer about DSSE-KMS, or drift to another item?

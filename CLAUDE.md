@@ -65,6 +65,22 @@ Every question sends all 25 sections. At stream start the server sends one `sect
 3. **Sources panel.** Cloudscape Panel layout (`panelPosition="side-start"`, 360px), so the panel sits between the rail and the chat and pushes the chat. The panel is plain, with a divider on its right edge: title "Sources" with an `angle-left` close button, "For: <question>", "Cited in this answer (n)" with the same [n] numbers in number order, then "Also read, not cited (n)" as an Expandable section, closed by default, in `data/docs.json` order. Every row is the source title as a link with its own external icon that opens in a new tab.
 4. **Which turn.** "View all sources (n)" opens the turn it belongs to. The rail Sources icon (an icon Button with `aria-pressed`, Lisa's outline icon, and her filled icon `design/icon-sources-cloudscape-filled.svg` on a blue circle when open) opens the latest complete or stopped turn. Before any such turn, the rail icon does nothing. The panel shows its turn live and stays on that turn while a new response generates. If its own turn starts to regenerate (Regenerate or Try again), the panel closes and returns focus as on a normal close. If the opener is gone ("View all sources" on that turn), focus goes to the prompt input.
 
+## GA-5 and GA-5c: follow-ups that name a list item
+
+On AWS Docs AI, "Tell me more about the third one." got the wrong item 0 of 3 times. Here code resolves the item from the list the reader can see, so Claude never guesses.
+
+1. **Chat history.** Each request sends the earlier questions and the response text the reader saw, as Claude messages. The 25 doc sections go once, in the first user message. Turns with no response text are left out. The code-written opening is part of the response: it's in the history and in the copied text.
+2. **Numbered lists.** The system prompt asks for a numbered list when an answer lists options or steps, each item starting with its short name and a colon ("3. DSSE-KMS: ..."), and a numbered list for every list (never a dash or bullet). Lines "1. ...", "2. ..." render as an `<ol>` in Cloudscape Text content (Box can't style lists). [n] popovers work inside items. Any "- " lines still render as a `<ul>` in Text content, so raw dashes never show. Positions resolve only from numbered lists.
+3. **Resolve in code (`src/followUp.js`).** A follow-up has a position only with a pointer word: "the third one", "third option", "3rd item", "number 3", "option 3", "item 3", "the last one" (first to tenth, 1st to 10th, one to ten). A bare "first" doesn't count. **Lookback:** code uses the latest response in the chat that has a numbered list (a GA-5c turn's options count), not only the latest response. After F1 (list) and the DSSE-KMS answer (no list), "the second one" resolves to SSE-KMS from F1. A newer response with its own list wins. Complete, stopped and error turns count (an error turn keeps its partial text on screen); a response that is still generating doesn't.
+   - 1 list, position in range: resolved. Loading text "Generating a response about <item>". The request carries the item as a fact, and Claude is told not to repeat which item it is. The system prompt tells Claude to continue the opening as one sentence, starting in lowercase ("The third one, DSSE-KMS: it applies..."), keeping the case of proper nouns and acronyms. The response opens with code text "<reader's wording>, <item>: " ("The third one, DSSE-KMS: ").
+   - 2 or more lists, or out of range: GA-5c.
+   - No position, or no list: a normal question with history.
+   - Prefill isn't used: `claude-sonnet-5-5` returns a 400 for assistant-turn prefills (Claude API docs), so the opening is code text shown before the streamed text.
+4. **GA-5c (`src/ClarifyResponse.jsx`).** Code writes it, with no request. Bold "Which option do you mean?", then a Cloudscape Support prompt group (vertical) with one prompt per item of the latest list, in order. No sources, actions or "Next Steps". The live region announces the question once (cleared first, so a second GA-5c question in a row is announced too). A pick adds a user bubble with the item name and resolves it in code, with the opening "Option n, <item>: ". The prompts stay and can be picked again (Lisa's decision, as on the live AWS Docs AI; Cloudscape's guideline is to hide previous support prompts). A typed answer goes through step 3 against the options.
+5. **Prompt caching and cost.** One `cache_control: {type: 'ephemeral'}` breakpoint (5-minute cache) on the last doc section caches the stable prefix: the system prompt and all 25 sections, about 30,000 tokens. The marker doesn't change what Claude receives (Claude API prompt caching docs: caching is a prefix match, and the marker isn't content). Everything after it (question, history, resolved fact) is per request. The server logs `input_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens` and `output_tokens` for each finished stream. Measured Oct 27: F1 wrote 30,027 cache tokens (about $0.084 with output); the follow-up read 30,027 from cache, 792 uncached (about $0.017 with output, versus about $0.071 uncached). Any change to the system prompt or the doc set changes the prefix, so the first request after it writes the cache again.
+
+**The system prompt must be locked before the evals.** Any change to it after that means rerunning them. Changes so far: numbered lists with "name:" items (Oct 26); numbered lists for every list, no dashes or bullets; continue the code-written opening in lowercase (Oct 27).
+
 ## Accessibility
 
 - The stop button's accessible label and tooltip are both "Stop generation". It's a one-item Button group in the Prompt input's `customPrimaryAction` slot, because the built-in action button has no tooltip.
@@ -107,6 +123,7 @@ Playwright tests call the real Claude API, so every run costs money. Run only wh
 
 - `tests/stop.spec.js`: 3 real streams (ask + stop, regenerate + stop, new question + stop). Needs `SERVER_LOG` set to the dev server's log file.
 - `tests/error.spec.js`: 1 real stream. Needs the dev server started with `FORCE_ERROR=1`.
+- `tests/followups.spec.js`: GA-5 and GA-5c checks, free: parsing, numbered list rendering, "the third one", out of range, a pick, a typed answer, 2 lists and no list. Uses the fake answer.
 - `tests/sources.spec.js`: GA-2 checks, free. Run `npx playwright test tests/sources.spec.js` with `npm run dev` running. It uses the fake answer, never Claude.
 - The fake answer lives in `tests/fakeAnswer.js`. `useFakeAnswer(page, [...])` adds a script to the Playwright test browser that replaces `fetch` for `/api/answer` only, and plays back the real 25-section `sections` event plus 6 cited sentences from a real F4 answer. Per request it can be `full`, `uncited` (no citations) or `hold` (2 cited sentences, then waits for Stop). Like `FORCE_ERROR`, it can't run in production: it exists only inside Playwright's test browser, and nothing in the app or server code reads it.
 - Playwright can't prove what a screen reader says. Lisa checks the live region with VoiceOver by hand.
@@ -123,12 +140,17 @@ These follow Lisa's spec, or weren't in the request, so they wait for her. Each 
 - **Thumbs down.** It only toggles. Cloudscape opens a dialog to collect more feedback.
 - **Sources panel, all sources cited.** "Also read, not cited (0)" would be an empty expandable section. Copy, or hiding the group, is Lisa's call.
 - **Sources under the answer.** Still a heading and list. Cloudscape's Gen AI chat pattern uses an expandable section titled "Sources", with source details in description text size.
+- **GA-5c component.** Cloudscape's Follow-up questions pattern uses "a dismissible dialog docked above prompt input" for clarifying intent; Support prompt group is listed for guiding a conversation. GA-5c uses Support prompt group, as in Lisa's spec and the live AWS Docs AI. Approve, or change it.
+- **GA-5c prompt text.** Support prompt group asks for prompts phrased "as a full question or a request". GA-5c prompts are bare item names ("DSSE-KMS"), which fit an answer to "Which option do you mean?". Approve, or change it.
+- **Picking while a response generates.** A pick is ignored while a response streams, with no sign that the prompts can't be used yet.
+- **Opening with no text.** If a resolved answer is stopped before any text arrives, it shows only "The third one, DSSE-KMS: " (ending in a colon), and Copy copies that.
 - **Smaller items.** The rail hides on phone. Thumbs up and down still show when a stop happened before any text. Response lines run about 1290px wide at 1440, and Cloudscape suggests constraining width. The rail Sources icon gives no feedback before the first answer (a disabled state with a reason is an option).
 
 ## Parking lot
 
 Known, not urgent. Revisit later.
 - **Chat width at 768px with the panel open.** The 360px panel leaves about 250px for the conversation. Options: a smaller panel, a resizable panel, or the narrow layout at tablet.
+- **More than 5 GA-5c prompts.** Cloudscape: "Don't display more than five support prompts at a time." A list of 6 to 10 items breaks that. F1 has 4.
 
 ## Doc data
 

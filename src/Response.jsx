@@ -6,7 +6,9 @@ import Link from '@cloudscape-design/components/link';
 import Popover from '@cloudscape-design/components/popover';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
+import TextContent from '@cloudscape-design/components/text-content';
 import { useEffect, useRef, useState } from 'react';
+import { turnText } from './followUp.js';
 import { collectSources, splitSources } from './streamAnswer.js';
 
 export const STOPPED_MESSAGE = 'Stopped. This response is not complete.';
@@ -44,27 +46,43 @@ function CitationMarker({ number, url, section, fallbackTitle }) {
   );
 }
 
-// Splits the streamed text blocks into paragraphs, and puts a [n] marker
-// after the text that each citation supports.
-function buildParagraphs(blocks, markersByBlock, sources, sectionsByUrl) {
-  const paragraphs = [[]];
+// Removes the first `length` characters of a line's text ("3. ") from its leading text pieces.
+function stripPrefix(pieces, length) {
+  const result = [];
+  let remaining = length;
+  for (const piece of pieces) {
+    if (remaining > 0 && typeof piece === 'string') {
+      const cut = Math.min(remaining, piece.length);
+      remaining -= cut;
+      if (piece.length > cut) result.push(piece.slice(cut));
+    } else {
+      result.push(piece);
+    }
+  }
+  return result;
+}
+
+// Turns the streamed text blocks into paragraphs and numbered lists, and puts a [n] marker
+// after the text that each citation supports. `opening` is the code-written start of a GA-5 answer.
+function buildContent(blocks, markersByBlock, sources, sectionsByUrl, opening) {
+  const lines = [{ pieces: opening ? [opening] : [] }];
   blocks.forEach((block, blockIndex) => {
-    // The paragraph that holds this block's last text. A block can end in a blank line,
-    // and its markers belong with its text, not at the start of the next paragraph.
-    let lastWithText = paragraphs.at(-1);
-    block.text.split(/\n\s*\n/).forEach((part, partIndex) => {
-      if (partIndex > 0) paragraphs.push([]);
+    // The line that holds this block's last text. A block can end in a line break,
+    // and its markers belong with its text, not at the start of the next line.
+    let lastWithText = lines.at(-1);
+    block.text.split('\n').forEach((part, partIndex) => {
+      if (partIndex > 0) lines.push({ pieces: [] });
       if (part.trim()) {
-        let text = part.replace(/^\n+/, '');
-        // Text right after a [n] marker needs a space ("writes. [2] Next", not "[2]Next").
-        if (typeof paragraphs.at(-1).at(-1) === 'object' && !/^\s/.test(text)) text = ` ${text}`;
-        paragraphs.at(-1).push(text);
-        lastWithText = paragraphs.at(-1);
+        const line = lines.at(-1);
+        // A word right after a [n] marker needs a space ("writes. [2] Next", not "[2]Next").
+        // Punctuation doesn't ("[1].", not "[1] .").
+        line.pieces.push(typeof line.pieces.at(-1) === 'object' && /^[\p{L}\p{N}(]/u.test(part) ? ` ${part}` : part);
+        lastWithText = line;
       }
     });
     for (const number of markersByBlock[blockIndex]) {
       const source = sources[number - 1];
-      lastWithText.push(
+      lastWithText.pieces.push(
         <span key={`marker-${blockIndex}-${number}`}>
           {' '}
           <CitationMarker
@@ -77,7 +95,44 @@ function buildParagraphs(blocks, markersByBlock, sources, sectionsByUrl) {
       );
     }
   });
-  return paragraphs.filter((paragraph) => paragraph.some((piece) => typeof piece !== 'string' || piece.trim()));
+
+  // Lines "1. ...", "2. ..." become one numbered list (blank lines between items are fine).
+  // Lines "- ..." become a bulleted list, so raw dashes never show. Positions only resolve from numbered lists.
+  // Other lines are prose. A blank line ends a paragraph.
+  const segments = [];
+  let paragraph = null;
+  let list = null;
+  for (const { pieces } of lines) {
+    if (!pieces.some((piece) => typeof piece !== 'string' || piece.trim())) {
+      paragraph = null;
+      continue;
+    }
+    const text = pieces.filter((piece) => typeof piece === 'string').join('');
+    const item = text.match(/^\s*(\d{1,2})[.)]\s+/);
+    const bullet = text.match(/^\s*[-•]\s+/);
+    if (bullet) {
+      if (!list || list.type !== 'ul') {
+        list = { type: 'ul', items: [] };
+        segments.push(list);
+      }
+      list.items.push(stripPrefix(pieces, bullet[0].length));
+      paragraph = null;
+    } else if (item) {
+      const number = Number(item[1]);
+      if (!list || list.type !== 'ol' || number !== list.start + list.items.length) {
+        list = { type: 'ol', start: number, items: [] };
+        segments.push(list);
+      }
+      list.items.push(stripPrefix(pieces, item[0].length));
+      paragraph = null;
+    } else {
+      list = null;
+      if (paragraph) paragraph.pieces.push(' ');
+      else segments.push((paragraph = { type: 'p', pieces: [] }));
+      paragraph.pieces.push(...pieces);
+    }
+  }
+  return segments;
 }
 
 export default function Response({ turn, canRegenerate, onRegenerate, onTryAgain, onViewAllSources }) {
@@ -95,27 +150,50 @@ export default function Response({ turn, canRegenerate, onRegenerate, onTryAgain
   const sections = turn.sections ?? [];
   const sectionsByUrl = new Map(sections.map((section) => [section.url, section]));
   const { sources, markersByBlock } = collectSources(blocks);
-  const paragraphs = buildParagraphs(blocks, markersByBlock, sources, sectionsByUrl);
+  const segments = buildContent(blocks, markersByBlock, sources, sectionsByUrl, turn.resolved?.opening);
   const { cited, alsoRead } = splitSources(blocks, sections);
   const sourceCount = cited.length + alsoRead.length;
-  const plainText = blocks.map((block) => block.text).join('').trim();
+  const plainText = turnText(turn); // Includes the code-written opening of a GA-5 answer.
   const isGenerating = turn.status === 'loading' || turn.status === 'streaming';
   const showActions = turn.status === 'stopped' || turn.status === 'complete';
 
   return (
     <div data-testid="response">
       <SpaceBetween size="m">
-        {paragraphs.length > 0 && (
+        {segments.length > 0 && (
           <div data-testid="response-text">
-            {paragraphs.map((pieces, index) => (
-              <Box variant="p" key={index}>
-                {pieces}
-              </Box>
-            ))}
+            {segments.map((segment, index) =>
+              segment.type === 'p' ? (
+                <Box variant="p" key={index}>
+                  {segment.pieces}
+                </Box>
+              ) : (
+                // Cloudscape Text content styles lists (Box can't).
+                <TextContent key={index}>
+                  {segment.type === 'ol' ? (
+                    <ol start={segment.start}>
+                      {segment.items.map((pieces, itemIndex) => (
+                        <li key={itemIndex}>{pieces}</li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <ul>
+                      {segment.items.map((pieces, itemIndex) => (
+                        <li key={itemIndex}>{pieces}</li>
+                      ))}
+                    </ul>
+                  )}
+                </TextContent>
+              )
+            )}
           </div>
         )}
 
-        {isGenerating && <StatusIndicator type="loading">Generating a response</StatusIndicator>}
+        {isGenerating && (
+          <StatusIndicator type="loading">
+            {turn.resolved ? `Generating a response about ${turn.resolved.name}` : 'Generating a response'}
+          </StatusIndicator>
+        )}
         {turn.status === 'stopped' && <StatusIndicator type="stopped">{STOPPED_MESSAGE}</StatusIndicator>}
         {turn.status === 'error' && (
           <div ref={errorRef}>

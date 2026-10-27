@@ -1,11 +1,12 @@
 // Calls /api/answer and passes each newline-delimited JSON event to onEvent.
 // Pass an AbortSignal to cancel. Cancelling closes the connection, which is
 // what tells the server to stop the Claude stream.
-export async function streamAnswer(question, { signal, onEvent }) {
+// history: earlier turns as { question, answer }. resolved: the list item code resolved (GA-5), or null.
+export async function streamAnswer(question, { history = [], resolved = null, signal, onEvent }) {
   const response = await fetch('/api/answer', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, history, resolved }),
     signal,
   });
   if (!response.ok || !response.body) {
