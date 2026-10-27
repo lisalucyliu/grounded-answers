@@ -12,6 +12,9 @@ body {
 
 .ga-rail {
   flex: none;
+  /* --ga-main-top is measured in App.jsx. The rail runs from there to the bottom of the viewport. */
+  height: calc(100dvh - var(--ga-main-top, 0px));
+  box-sizing: border-box;
 }
 
 /* --ga-main-top is measured in App.jsx: where the main column starts on screen. */
@@ -19,6 +22,11 @@ body {
   flex: 1;
   min-width: 0;
   height: calc(100dvh - var(--ga-main-top, 0px));
+}
+
+/* The chat column inside the panel layout: the conversation scrolls above the pinned prompt. */
+.ga-chat {
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -38,4 +46,10 @@ body {
   .ga-rail {
     display: none;
   }
+}
+
+/* The Sources panel's divider runs the full height of the panel. */
+.ga-sources-panel {
+  min-height: 100%;
+  box-sizing: border-box;
 }

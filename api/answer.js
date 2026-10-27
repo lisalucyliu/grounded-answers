@@ -83,6 +83,18 @@ export async function POST(request) {
         if (!stopped) controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
       };
 
+      // Every section sent to Claude, so the browser can list cited and not-cited sources.
+      send({
+        type: 'sections',
+        sections: docs.sections.map(({ id, url, pageTitle, guideName, sectionHeading }) => ({
+          id,
+          url,
+          pageTitle,
+          guideName,
+          sectionHeading,
+        })),
+      });
+
       try {
         console.log('[answer] stream started');
         claudeStream = client.messages.stream({

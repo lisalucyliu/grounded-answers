@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-// These tests call the real Claude API, so each run costs money.
+// stop.spec.js and error.spec.js call the real Claude API, so each run costs money.
+// sources.spec.js uses the fake answer in fakeAnswer.js and is free.
 // Start `npm run dev` first (see CLAUDE.md), then run one test file at a time.
 export default defineConfig({
   testDir: './tests',

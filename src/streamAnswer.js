@@ -56,3 +56,21 @@ export function collectSources(blocks) {
   });
   return { sources, markersByBlock };
 }
+
+// "page title · guide name › section". The section part only shows when it differs from the page title.
+// Same rule as the server's search result titles.
+export function sourceTitle(section) {
+  const base = `${section.pageTitle} · ${section.guideName}`;
+  return section.sectionHeading === section.pageTitle ? base : `${base} › ${section.sectionHeading}`;
+}
+
+// Splits the sections the server sent into cited (numbered, by first citation)
+// and also read (every other section, in the order they were sent).
+export function splitSources(blocks, sections) {
+  const { sources } = collectSources(blocks);
+  const byUrl = new Map(sections.map((section) => [section.url, section]));
+  const cited = sources.map((source) => ({ ...source, section: byUrl.get(source.url) }));
+  const citedUrls = new Set(sources.map((source) => source.url));
+  const alsoRead = sections.filter((section) => !citedUrls.has(section.url));
+  return { cited, alsoRead };
+}

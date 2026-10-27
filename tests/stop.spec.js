@@ -38,7 +38,8 @@ test('stop keeps partial text, shows status, stops the server stream', async ({ 
       expectedRegenerateButtons,
       serverLoggedStop: countInLog('[answer] stream stopped') === stoppedBefore + 1,
       serverDidNotFinish: countInLog('[answer] stream finished') === finishedBefore,
-      sourcesMatchPartialText: sources.length > 0 && JSON.stringify(sources) === JSON.stringify(markers),
+      // The list under the response shows the first 5 cited sources. The rest are in the Sources panel.
+      sourcesMatchPartialText: sources.length > 0 && JSON.stringify(sources) === JSON.stringify(markers.slice(0, 5)),
       sources: sources.join(','),
       markers: markers.join(','),
       focusOnPrompt: await promptBox(page).evaluate((element) => element === document.activeElement),
