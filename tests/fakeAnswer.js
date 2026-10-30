@@ -42,6 +42,13 @@ const TWO_LISTS_ANSWER = [
   ['Before replication works:\n1. Versioning: turn it on for both buckets.\n2. IAM role: give Amazon S3 permission to replicate.\n\n', 'replication-requirements'],
   ['To copy objects that already exist:\n1. Batch Replication: create a Batch Operations job.\n2. Manifest: choose which objects to copy.\n3. Completion report: check the results.', 's3-batch-replication-batch'],
 ];
+// A numbered list where Claude skipped a number (1, 2, 4). It shows as 1, 2, 3.
+const SKIPPED_ANSWER = [
+  ['Three options:\n\n', 'UsingEncryption'],
+  ['1. SSE-S3: server-side encryption with Amazon S3 managed keys.\n', 'UsingServerSideEncryption'],
+  ['2. SSE-KMS: server-side encryption with AWS KMS keys.\n', 'UsingKMSEncryption'],
+  ['4. DSSE-KMS: dual-layer server-side encryption with AWS KMS keys.', 'UsingDSSEncryption'],
+];
 // Dash bullets, which the system prompt asks Claude not to use. They should render as a bulleted list.
 const DASHES_ANSWER = [
   ['A few caveats to know about:\n\n- Changing the default encryption doesn\'t change existing objects.\n', 'UsingKMSEncryption'],
@@ -78,12 +85,17 @@ const KINDS = {
   list: () => answerEvents({ sentences: LIST_ANSWER }),
   twoLists: () => answerEvents({ sentences: TWO_LISTS_ANSWER }),
   dashes: () => answerEvents({ sentences: DASHES_ANSWER }),
+  skipped: () => answerEvents({ sentences: SKIPPED_ANSWER }),
   resolved: () => answerEvents({ sentences: RESOLVED_ANSWER }),
   holdResolved: () => answerEvents({ sentences: RESOLVED_ANSWER }),
+  // Only the sections event, then it waits for Stop: a stop before any text arrives.
+  holdEmpty: () => answerEvents().slice(0, 1),
+  // Text, then the server's error event, as when the Claude stream fails partway.
+  error: () => [...answerEvents().slice(0, 7), { type: 'error' }],
 };
 
 // answers: one entry per request, in order: "full", "uncited", "hold", "list", "twoLists", "dashes",
-// "resolved" or "holdResolved". The hold kinds send their text and then wait until the request is cancelled (Stop).
+// "skipped", "resolved", "holdResolved", "holdEmpty" or "error". The hold kinds send their text and then wait until the request is cancelled (Stop).
 // Each request body is kept in window.__answerRequests, so tests can check the history that was sent.
 export async function useFakeAnswer(page, answers) {
   const scripts = answers.map((kind) => ({ events: KINDS[kind](), hold: kind.startsWith('hold') }));

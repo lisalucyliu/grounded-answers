@@ -23,7 +23,7 @@ import {
   colorTextButtonPrimaryActive,
   colorTextButtonPrimaryDefault,
   colorTextButtonPrimaryHover,
-  shadowContainerActive,
+  shadowCard,
   spaceScaledL,
   spaceScaledXl,
   spaceStaticXs,
@@ -283,7 +283,7 @@ export default function App() {
         <Container
           fitHeight
           style={{
-            root: { borderColor: 'transparent', boxShadow: shadowContainerActive },
+            root: { borderColor: 'transparent', boxShadow: shadowCard },
             content: { paddingInline: spaceStaticXs },
           }}
         >
@@ -374,7 +374,7 @@ export default function App() {
                     style={{
                       root: {
                         borderColor: { default: 'transparent', hover: 'transparent' },
-                        boxShadow: { default: shadowContainerActive, hover: shadowContainerActive },
+                        boxShadow: { default: shadowCard, hover: shadowCard },
                       },
                     }}
                       customPrimaryAction={

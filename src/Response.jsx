@@ -8,7 +8,7 @@ import SpaceBetween from '@cloudscape-design/components/space-between';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import TextContent from '@cloudscape-design/components/text-content';
 import { useEffect, useRef, useState } from 'react';
-import { turnText } from './followUp.js';
+import { LIST_ITEM, startsNewList, turnText } from './followUp.js';
 import { collectSources, splitSources } from './streamAnswer.js';
 
 export const STOPPED_MESSAGE = 'Stopped. This response is not complete.';
@@ -96,7 +96,7 @@ function buildContent(blocks, markersByBlock, sources, sectionsByUrl, opening) {
     }
   });
 
-  // Lines "1. ...", "2. ..." become one numbered list (blank lines between items are fine).
+  // Numbered lines become an ordered list, using the same rule as the parser in followUp.js.
   // Lines "- ..." become a bulleted list, so raw dashes never show. Positions only resolve from numbered lists.
   // Other lines are prose. A blank line ends a paragraph.
   const segments = [];
@@ -108,7 +108,7 @@ function buildContent(blocks, markersByBlock, sources, sectionsByUrl, opening) {
       continue;
     }
     const text = pieces.filter((piece) => typeof piece === 'string').join('');
-    const item = text.match(/^\s*(\d{1,2})[.)]\s+/);
+    const item = text.match(LIST_ITEM);
     const bullet = text.match(/^\s*[-•]\s+/);
     if (bullet) {
       if (!list || list.type !== 'ul') {
@@ -118,9 +118,8 @@ function buildContent(blocks, markersByBlock, sources, sectionsByUrl, opening) {
       list.items.push(stripPrefix(pieces, bullet[0].length));
       paragraph = null;
     } else if (item) {
-      const number = Number(item[1]);
-      if (!list || list.type !== 'ol' || number !== list.start + list.items.length) {
-        list = { type: 'ol', start: number, items: [] };
+      if (startsNewList(Number(item[1]), list?.type === 'ol' ? list : null)) {
+        list = { type: 'ol', items: [] };
         segments.push(list);
       }
       list.items.push(stripPrefix(pieces, item[0].length));
@@ -171,7 +170,7 @@ export default function Response({ turn, canRegenerate, onRegenerate, onTryAgain
                 // Cloudscape Text content styles lists (Box can't).
                 <TextContent key={index}>
                   {segment.type === 'ol' ? (
-                    <ol start={segment.start}>
+                    <ol>
                       {segment.items.map((pieces, itemIndex) => (
                         <li key={itemIndex}>{pieces}</li>
                       ))}

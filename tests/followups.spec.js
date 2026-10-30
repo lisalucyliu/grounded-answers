@@ -48,6 +48,12 @@ test('parsing: positions and numbered lists', () => {
   expect(decideFollowUp(THIRD, []).kind).toBe('normal');
   expect(decideFollowUp('How do I add tags?', [F1_LIST]).kind).toBe('normal');
 
+  // One numbering rule: skipped or repeated numbers stay in one list, shown as 1, 2, 3. Only "1" starts a new list.
+  expect(findLists('1. SSE-S3: a\n2. SSE-KMS: b\n4. DSSE-KMS: c')).toEqual([
+    [{ name: 'SSE-S3' }, { name: 'SSE-KMS' }, { name: 'DSSE-KMS' }],
+  ]);
+  expect(findLists('3. Versioning: x\n4. IAM role: y')).toEqual([[{ name: 'Versioning' }, { name: 'IAM role' }]]);
+
   // Lookback: the latest response with a numbered list, including an error turn's partial text.
   const turn = (status, text) => ({ status, blocks: { 0: { text } } });
   const f1 = turn('complete', '1. SSE-S3: a\n2. SSE-KMS: b');
@@ -222,5 +228,47 @@ test('dash lines render as a bulleted list, and positions only resolve from numb
   await waitForAnswer(page);
   await expect(page.getByTestId('clarify')).toHaveCount(0);
   expect((await requests(page))[1].resolved).toBeNull();
+});
+
+test('the parser and the renderer agree: "the third one" is the third item on screen', async ({ page }) => {
+  // Claude skips a number: 1, 2, 4. The list shows 1, 2, 3, and "the third one" is the third item shown.
+  await useFakeAnswer(page, ['skipped', 'resolved']);
+  await page.goto('/');
+  await ask(page, F1);
+  await waitForAnswer(page);
+  const items = lastResponse(page).locator('ol');
+  await expect(items).toHaveCount(1);
+  await expect(items.locator('li')).toHaveCount(3);
+  const shown = await items.locator('li').evaluateAll((lis) => lis.map((li) => li.textContent.split(':')[0]));
+  await ask(page, THIRD);
+  await waitForAnswer(page);
+  await expect(lastResponse(page)).toHaveText(new RegExp(`^The third one, ${shown[2]}: `));
+});
+
+test('a resolved answer stopped before any text keeps the opening, the stop status and Regenerate', async ({ page }) => {
+  await useFakeAnswer(page, ['list', 'holdEmpty', 'resolved']);
+  await page.goto('/');
+  await ask(page, F1);
+  await waitForAnswer(page);
+  await ask(page, THIRD);
+  await expect(page.getByText('Generating a response about DSSE-KMS', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Stop generation' }).click();
+  await waitForAnswer(page);
+  const response = page.getByTestId('response').last();
+  await expect(response.getByTestId('response-text')).toHaveText('The third one, DSSE-KMS:');
+  await expect(response.getByText('Stopped. This response is not complete.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Regenerate response' })).toBeVisible();
+  await page.getByRole('button', { name: 'Regenerate response' }).click();
+  await waitForAnswer(page);
+  await expect(lastResponse(page)).toHaveText(/^The third one, DSSE-KMS: it applies/);
+});
+
+test('the prompt group is named by its question', async ({ page }) => {
+  await useFakeAnswer(page, ['list']);
+  await page.goto('/');
+  await ask(page, F1);
+  await waitForAnswer(page);
+  await ask(page, 'Tell me more about the fifth one.');
+  await expect(clarify(page).getByRole('menubar', { name: 'Which option do you mean?' })).toBeVisible();
 });
 

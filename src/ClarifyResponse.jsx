@@ -12,8 +12,9 @@ export default function ClarifyResponse({ turn, onPick }) {
         <Box variant="p" fontWeight="bold">
           {CLARIFY_QUESTION}
         </Box>
+        {/* Support prompt group has ariaLabel only (no ariaLabelledby), so the group gets the question's words. */}
         <SupportPromptGroup
-          ariaLabel="Options"
+          ariaLabel={CLARIFY_QUESTION}
           items={turn.items.map((name, index) => ({ id: String(index), text: name }))}
           onItemClick={({ detail }) => onPick(Number(detail.id))}
         />

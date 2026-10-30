@@ -42,31 +42,30 @@ export function findPosition(question) {
   return null;
 }
 
-// The numbered lists in a response's text. A list is a run of lines "1. ...", "2. ...", with blank lines
-// allowed between items. Prose between items, or a new "1.", starts over. Each item's name is the text
-// before its first colon.
+// One numbering rule for the parser here and the renderer in Response.jsx, so "the third one" is always the
+// third item on screen. A list is a run of numbered lines ("1. ...", "2) ..."), with blank lines allowed between
+// items. A prose line ends the list, and a line numbered 1 starts a new one. Other numbers don't matter: the
+// list shows 1, 2, 3 in order, whatever numbers Claude wrote.
+export const LIST_ITEM = /^\s*(\d{1,2})[.)]\s+/;
+export const startsNewList = (number, currentList) => !currentList || number === 1;
+
+// The numbered lists in a response's text. Each item's name is the text before its first colon.
 export function findLists(text) {
   const lists = [];
   let current = null;
   for (const line of text.split('\n')) {
     if (!line.trim()) continue;
-    const item = line.match(/^\s*(\d{1,2})[.)]\s+(.*)$/);
-    if (item) {
-      const number = Number(item[1]);
-      if (!current || number !== current.length + 1) {
-        current = number === 1 ? [] : null;
-        if (current) lists.push(current);
-      }
-      if (current) {
-        const body = item[2].trim();
-        const colon = body.indexOf(':');
-        current.push({ name: (colon > 0 ? body.slice(0, colon) : body).trim() });
-      }
-    } else {
+    const item = line.match(LIST_ITEM);
+    if (!item) {
       current = null;
+      continue;
     }
+    if (startsNewList(Number(item[1]), current)) lists.push((current = []));
+    const body = line.slice(item[0].length).trim();
+    const colon = body.indexOf(':');
+    current.push({ name: (colon > 0 ? body.slice(0, colon) : body).trim() });
   }
-  return lists.filter((list) => list.length > 0);
+  return lists;
 }
 
 // Decides what a follow-up does, given the lists the reader can see in the latest response.
