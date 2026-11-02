@@ -19,31 +19,49 @@ import {
   colorBackgroundButtonPrimaryDefault,
   colorBackgroundButtonPrimaryHover,
   colorBackgroundChatBubbleIncoming,
-  colorBorderDividerDefault,
+  colorBorderDividerSecondary,
   colorTextButtonPrimaryActive,
   colorTextButtonPrimaryDefault,
   colorTextButtonPrimaryHover,
   shadowCard,
   spaceScaledL,
   spaceScaledXl,
-  spaceStaticXs,
   spaceStaticXxs,
-  spaceStaticXxxs,
 } from '@cloudscape-design/design-tokens';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import Response, { ERROR_MESSAGE, STOPPED_MESSAGE } from './Response.jsx';
+import Response, { CONFIDENCE, ERROR_MESSAGE, STOPPED_MESSAGE } from './Response.jsx';
 import SourcesIcon, { SourcesFilledIcon } from './SourcesIcon.jsx';
 import SourcesPanel from './SourcesPanel.jsx';
-import { splitSources, streamAnswer } from './streamAnswer.js';
-import { CLARIFY_QUESTION, chatHistory, decideFollowUp, resolvePick, visibleLists } from './followUp.js';
+import { splitSources, streamAnswer, turnConfidence } from './streamAnswer.js';
+import { chatHistory, decideFollowUp, readTurn, resolvePick, turnText, visibleLists } from './followUp.js';
 import ClarifyResponse from './ClarifyResponse.jsx';
 
 let nextTurnId = 1;
 
-// Rail icon buttons are 28px squares: a 16x20 icon box, 2px border, 2px padding above and below and 4px at the sides.
-// borderRadiusButton (20px) is more than half of 28px, so the button is round.
+// What the live region says when a response ends: the badge text first, if the response has a badge.
+function withBadgeText(turn, message) {
+  const result = turnConfidence(turn);
+  return result ? `${CONFIDENCE[result.level].label}. ${message}` : message;
+}
+
+// Adds one stream event to a turn. Returns only the fields that change.
+function applyEvent(turn, event) {
+  if (event.type === 'sections') return { sections: event.sections };
+  if (!['block', 'text', 'citation'].includes(event.type)) return {};
+  const block = turn.blocks[event.index] ?? { text: '', citations: [] };
+  if (event.type === 'block') return { blocks: { ...turn.blocks, [event.index]: { text: '', citations: [] } } };
+  if (event.type === 'text') {
+    return { status: 'streaming', blocks: { ...turn.blocks, [event.index]: { ...block, text: block.text + event.text } } };
+  }
+  const citation = { url: event.url, title: event.title };
+  return { blocks: { ...turn.blocks, [event.index]: { ...block, citations: [...block.citations, citation] } } };
+}
+
+// Approved deviation (Lisa, Nov 2, decision 63): the AWS rail sizes, with literal px where no token gives the size.
+// Rail icon buttons are 32px squares: a 16x20 icon box, 2px border, 4px padding above and below and 6px at the sides.
+// borderRadiusButton (20px) is more than half of 32px, so the button is round.
 const RAIL_BUTTON_STYLE = {
-  root: { paddingBlock: spaceStaticXxxs, paddingInline: spaceStaticXxs, borderRadius: borderRadiusButton },
+  root: { paddingBlock: spaceStaticXxs, paddingInline: '6px', borderRadius: borderRadiusButton },
 };
 
 // Approved style change: the open state of the rail Sources button is a blue circle with a white icon,
@@ -66,7 +84,7 @@ const RAIL_BUTTON_ACTIVE_STYLE = {
 
 // Decoration between rail icons, hidden from screen readers.
 function RailDivider() {
-  return <div aria-hidden="true" style={{ borderBlockStart: `${borderWidthLayoutSideNavigation} solid ${colorBorderDividerDefault}` }} />;
+  return <div aria-hidden="true" style={{ borderBlockStart: `${borderWidthLayoutSideNavigation} solid ${colorBorderDividerSecondary}` }} />;
 }
 
 export default function App() {
@@ -129,7 +147,8 @@ export default function App() {
     setSearchText(question);
 
     const isCurrent = () => activeRequest.current?.controller === controller;
-    let answerText = '';
+    // The same turn as in state, kept here so the announcement can read it when the stream ends.
+    let latest = { blocks: {}, sections: [], resolved };
     try {
       await streamAnswer(question, {
         history,
@@ -137,31 +156,14 @@ export default function App() {
         signal: controller.signal,
         onEvent: (event) => {
           if (!isCurrent()) return;
-          if (event.type === 'sections') {
-            updateTurn(turnId, () => ({ sections: event.sections }));
-          } else if (event.type === 'block') {
-            updateTurn(turnId, (turn) => ({ blocks: { ...turn.blocks, [event.index]: { text: '', citations: [] } } }));
-          } else if (event.type === 'text') {
-            answerText += event.text;
-            updateTurn(turnId, (turn) => {
-              const block = turn.blocks[event.index] ?? { text: '', citations: [] };
-              return {
-                status: 'streaming',
-                blocks: { ...turn.blocks, [event.index]: { ...block, text: block.text + event.text } },
-              };
-            });
-          } else if (event.type === 'citation') {
-            updateTurn(turnId, (turn) => {
-              const block = turn.blocks[event.index] ?? { text: '', citations: [] };
-              const citation = { url: event.url, title: event.title };
-              return { blocks: { ...turn.blocks, [event.index]: { ...block, citations: [...block.citations, citation] } } };
-            });
-          }
+          latest = { ...latest, ...applyEvent(latest, event) };
+          updateTurn(turnId, (turn) => applyEvent(turn, event));
         },
       });
       if (isCurrent()) {
         updateTurn(turnId, () => ({ status: 'complete' }));
-        setAnnouncement(`${resolved?.opening ?? ''}${answerText}`.trim()); // Cloudscape: announce each new message.
+        const finished = { ...latest, status: 'complete' };
+        setAnnouncement(withBadgeText(finished, turnText(finished))); // Cloudscape: announce each new message.
       }
     } catch (error) {
       // A stop already set the stopped state. Anything else is a real failure.
@@ -185,12 +187,12 @@ export default function App() {
     followNewText.current = true;
     if (decision.kind === 'clarify') {
       // Code writes this turn. No request to Claude.
-      const turn = { id: nextTurnId++, kind: 'clarify', question, items: decision.items, status: 'clarify', blocks: {}, sections: [] };
+      const turn = { id: nextTurnId++, kind: 'clarify', question, clarifyQuestion: decision.question, items: decision.items, status: 'clarify', blocks: {}, sections: [] };
       setTurns((current) => [...current, turn]);
       setSearchText(question);
       // Clear first, so a second GA-5c question in a row still changes the live region and is announced.
       setAnnouncement('');
-      setTimeout(() => setAnnouncement(CLARIFY_QUESTION));
+      setTimeout(() => setAnnouncement(decision.question));
       return;
     }
     const resolved = decision.kind === 'resolved' ? decision.resolved : null;
@@ -200,9 +202,10 @@ export default function App() {
   }
 
   function pick(clarifyTurn, index) {
-    if (generating) return;
     const resolved = resolvePick(clarifyTurn.items, index);
     ask(resolved.name, resolved);
+    // The prompts hide while the response generates, so the picked button goes away. Focus can't stay on it.
+    setTimeout(() => promptRef.current?.focus());
   }
 
   function rerun(turn, { regenerate }) {
@@ -226,7 +229,8 @@ export default function App() {
     request.controller.abort(); // Closes the connection. The server sees this and stops the Claude stream.
     updateTurn(request.turnId, () => ({ status: 'stopped' }));
     setGenerating(false);
-    setAnnouncement(STOPPED_MESSAGE);
+    const stoppedTurn = turns.find((turn) => turn.id === request.turnId);
+    setAnnouncement(withBadgeText({ ...stoppedTurn, status: 'stopped' }, STOPPED_MESSAGE));
     setTimeout(() => promptRef.current?.focus());
   }
 
@@ -242,12 +246,7 @@ export default function App() {
   const panelSources = panelTurn && {
     turnId: `${panelTurn.id}-${panelTurn.attempt}`,
     question: panelTurn.question,
-    ...splitSources(
-      Object.keys(panelTurn.blocks)
-        .sort((a, b) => a - b)
-        .map((index) => panelTurn.blocks[index]),
-      panelTurn.sections
-    ),
+    ...splitSources(readTurn(panelTurn).blocks, panelTurn.sections),
   };
 
   // Opens the panel on one turn. restoreFocus puts focus back on the control that opened it.
@@ -279,12 +278,13 @@ export default function App() {
   const aiTab = (
     <div className="ga-tab-body">
       <div className="ga-rail" style={{ paddingInlineEnd: spaceScaledL, paddingBlockEnd: spaceScaledL }}>
-        {/* Approved style change: gray shadow, no outline, full height, as on the live AWS Docs AI rail. */}
+        {/* Approved style change: gray shadow, no outline, full height, as on the live AWS Docs AI rail.
+            48px wide: 32px of content, 7px padding and the Container's 1px border on each side. Dividers fill the 32px. */}
         <Container
           fitHeight
           style={{
             root: { borderColor: 'transparent', boxShadow: shadowCard },
-            content: { paddingInline: spaceStaticXs },
+            content: { paddingInline: '7px' },
           }}
         >
           <SpaceBetween size="m">
@@ -336,12 +336,13 @@ export default function App() {
                               {turn.question}
                             </ChatBubble>
                             {turn.kind === 'clarify' ? (
-                              <ClarifyResponse turn={turn} onPick={(index) => pick(turn, index)} />
+                              <ClarifyResponse turn={turn} hidePrompts={generating} onPick={(index) => pick(turn, index)} />
                             ) : (
                               <Response
                                 key={`${turn.id}-${turn.attempt}`}
                                 turn={turn}
                                 canRegenerate={turn === lastTurn && turn.status === 'stopped' && !turn.regenerated}
+                                hideTryAgain={generating}
                                 onRegenerate={() => rerun(turn, { regenerate: true })}
                                 onTryAgain={() => rerun(turn, { regenerate: false })}
                                 onViewAllSources={(restoreFocus) => openSources(turn, restoreFocus)}

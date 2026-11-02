@@ -5,14 +5,16 @@ import { readFileSync } from 'node:fs';
 // /api/answer only. Nothing in the app or the server changes, so it can't run in production.
 
 const docs = JSON.parse(readFileSync(new URL('../data/docs.json', import.meta.url), 'utf8'));
-const SECTIONS = docs.sections.map(({ id, url, pageTitle, guideName, sectionHeading }) => ({
+const SECTIONS = docs.sections.map(({ id, url, pageTitle, guideName, sectionHeading, caution }) => ({
   id,
   url,
   pageTitle,
   guideName,
   sectionHeading,
+  caution,
 }));
 
+export const NO_ANSWER_MESSAGE = "The documentation provided doesn't cover this.";
 export const FAKE_QUESTION = 'What do I need to set up before S3 replication works?';
 
 // Sentences from a real F4 answer, so the layout shows realistic text. Each one cites a
@@ -59,6 +61,20 @@ const RESOLVED_ANSWER = [
   ['it applies two layers of encryption to each object, using AWS KMS keys.', 'UsingDSSEncryption'],
 ];
 
+// GA-3 fakes. The cost example section is the one with a caution flag.
+const COST_ONLY_ANSWER = [['The documentation cites $0.023 per GB per month for the first 50 TB.', 'cost-example-1-s3-pricing']];
+const COST_MIXED_ANSWER = [
+  ['The documentation cites $0.023 per GB per month for the first 50 TB.', 'cost-example-1-s3-pricing'],
+  ['Versioned objects are billed for every version you store.', 'Versioning'],
+];
+
+// GA-4 marker fakes. The marker arrives in pieces across blocks, the way a real stream can split it.
+const NO_ANSWER_TEXT = NO_ANSWER_MESSAGE;
+const MARKER_UNCITED_ANSWER = [['[NO_', null], ['ANSWER]\n', null], [NO_ANSWER_TEXT, null]];
+const MARKER_CITED_ANSWER = [['[NO_ANSWER]\n' + NO_ANSWER_TEXT, null], [' Export jobs copy revisions to Amazon S3.', 'dx-exporting-revisions']];
+// Marker plus the one flagged section: without the marker this would be a Low badge.
+const MARKER_FLAGGED_ANSWER = [['[NO_ANSWER]\n\n', null], ...COST_ONLY_ANSWER];
+
 function title(section) {
   const base = `${section.pageTitle} · ${section.guideName}`;
   return section.sectionHeading === section.pageTitle ? base : `${base} › ${section.sectionHeading}`;
@@ -88,14 +104,35 @@ const KINDS = {
   skipped: () => answerEvents({ sentences: SKIPPED_ANSWER }),
   resolved: () => answerEvents({ sentences: RESOLVED_ANSWER }),
   holdResolved: () => answerEvents({ sentences: RESOLVED_ANSWER }),
+  costOnly: () => answerEvents({ sentences: COST_ONLY_ANSWER }),
+  costMixed: () => answerEvents({ sentences: COST_MIXED_ANSWER }),
+  // The flagged sentence arrives, then it waits for Stop. A full answer would cite one more section (costMixed).
+  holdCost: () => answerEvents({ sentences: COST_ONLY_ANSWER }),
+  // Text with no citations, then it waits for Stop.
+  holdUncited: () => answerEvents({ cited: false }).slice(0, 7),
   // Only the sections event, then it waits for Stop: a stop before any text arrives.
   holdEmpty: () => answerEvents().slice(0, 1),
   // Text, then the server's error event, as when the Claude stream fails partway.
   error: () => [...answerEvents().slice(0, 7), { type: 'error' }],
+  // The sections event, then the server's error event: an error with no text.
+  errorEmpty: () => [...answerEvents().slice(0, 1), { type: 'error' }],
+  markerUncited: () => answerEvents({ sentences: MARKER_UNCITED_ANSWER }),
+  markerCited: () => answerEvents({ sentences: MARKER_CITED_ANSWER }),
+  markerFlagged: () => answerEvents({ sentences: MARKER_FLAGGED_ANSWER }),
+  // Part of the marker, then it waits for Stop.
+  holdMarkerPartial: () => answerEvents({ sentences: [['[NO_ANS', null]] }),
+  // The whole marker but not the end of its line, then it waits for Stop.
+  holdMarkerNoNewline: () => answerEvents({ sentences: [['[NO_ANSWER]', null]] }),
+  // The marker line and some text, then it waits for Stop.
+  holdMarkerLine: () => answerEvents({ sentences: [['[NO_ANSWER]\n' + NO_ANSWER_TEXT, null]] }),
+  // The marker line and some text, then the server's error event.
+  errorMarker: () => [...answerEvents({ sentences: [['[NO_ANSWER]\n' + NO_ANSWER_TEXT, null]] }), { type: 'error' }],
 };
 
 // answers: one entry per request, in order: "full", "uncited", "hold", "list", "twoLists", "dashes",
-// "skipped", "resolved", "holdResolved", "holdEmpty" or "error". The hold kinds send their text and then wait until the request is cancelled (Stop).
+// "skipped", "resolved", "costOnly", "costMixed", "holdCost", "holdUncited", "holdResolved", "holdEmpty",
+// "error", "errorEmpty", "errorMarker", "markerUncited", "markerCited", "markerFlagged", "holdMarkerPartial",
+// "holdMarkerNoNewline" or "holdMarkerLine". The hold kinds send their text and then wait until the request is cancelled (Stop).
 // Each request body is kept in window.__answerRequests, so tests can check the history that was sent.
 export async function useFakeAnswer(page, answers) {
   const scripts = answers.map((kind) => ({ events: KINDS[kind](), hold: kind.startsWith('hold') }));

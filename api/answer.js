@@ -12,7 +12,8 @@ When the answer lists options or steps, write them as a numbered list, one item 
 Use a numbered list for every list. Never start a line with a dash or a bullet.
 When the app shows an opening that names a list item, continue it as one sentence: start in lowercase, for example "The third one, DSSE-KMS: it applies...". Proper nouns and acronyms keep their case.
 Keep the answer short and practical, the way a senior engineer would explain it to a colleague.
-If the search results don't contain the answer, say that the documentation provided doesn't cover it.`;
+If the search results don't contain the answer, say that the documentation provided doesn't cover it.
+When the provided documentation does not answer the question, start your response with [NO_ANSWER] on its own first line, then write your normal response. In every other case, never write [NO_ANSWER].`;
 
 const MAX_HISTORY_TURNS = 20;
 const MAX_TEXT_LENGTH = 20_000;
@@ -126,14 +127,16 @@ export async function POST(request) {
       };
 
       // Every section sent to Claude, so the browser can list cited and not-cited sources.
+      // caution (GA-3) is for the confidence badge in the browser. searchResults() never sends it to Claude.
       send({
         type: 'sections',
-        sections: docs.sections.map(({ id, url, pageTitle, guideName, sectionHeading }) => ({
+        sections: docs.sections.map(({ id, url, pageTitle, guideName, sectionHeading, caution }) => ({
           id,
           url,
           pageTitle,
           guideName,
           sectionHeading,
+          caution,
         })),
       });
 

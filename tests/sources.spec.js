@@ -58,12 +58,12 @@ test('sources list, citation popovers and the Sources panel', async ({ page }) =
     expect(paragraph, 'no text runs into a marker').not.toMatch(/\[\d+\][A-Za-z]/);
   }
 
-  // Under the answer: max 5 cited sources, then "View all sources (25)".
+  // Under the answer: max 5 cited sources, then "View all sources" with no count.
   const underAnswer = (await response.locator('[data-testid="sources"] [id^="source-"]').allTextContents()).map((item) =>
     Number(item.match(/^\[(\d+)\]/)[1])
   );
   expect(underAnswer).toEqual(markers.slice(0, 5));
-  const viewAll = response.getByRole('button', { name: 'View all sources (25)' });
+  const viewAll = response.getByRole('button', { name: 'View all sources', exact: true });
   await expect(viewAll).toBeVisible();
 
   // Every [n] popover links to its section URL, with the #anchor on subsections.
@@ -112,15 +112,17 @@ test('sources list, citation popovers and the Sources panel', async ({ page }) =
   console.log(JSON.stringify({ markers, underAnswer, cited: cited.length, alsoRead: alsoRead.length }));
 });
 
-test('0 cited: only "View all sources", and the panel keeps the cited heading', async ({ page }) => {
+test('0 cited: no "View all sources", the rail still opens the panel, and it keeps its counts', async ({ page }) => {
   await useFakeAnswer(page, ['uncited']);
   await page.goto('/');
   await ask(page, FAKE_QUESTION);
   await waitForAnswer(page);
   const response = page.getByTestId('response').last();
   await expect(response.getByText('Sources', { exact: true })).toHaveCount(0);
-  await response.getByRole('button', { name: 'View all sources (25)' }).click();
+  await expect(response.getByRole('button', { name: /^View all sources/ })).toHaveCount(0);
+  await railSources(page).click();
   await expect(panel(page).getByText('Cited in this answer (0)')).toBeVisible();
+  await expect(panel(page).getByText('Also read, not cited (25)')).toBeVisible();
   await expect(panel(page).getByTestId('panel-cited').locator('p')).toHaveCount(0);
 });
 
@@ -132,7 +134,7 @@ test('after a stop, only sources from the partial text are cited; regenerate clo
   await ask(page, FAKE_QUESTION);
   await stopWhenTextArrives(page);
   const markers = await markersInText(page);
-  await page.getByTestId('response').last().getByRole('button', { name: 'View all sources (25)' }).click();
+  await page.getByTestId('response').last().getByRole('button', { name: 'View all sources', exact: true }).click();
   const { cited, alsoRead } = await panelLists(page);
   expect(cited.map((source) => source.number)).toEqual(markers);
   expect(cited.length + alsoRead.length).toBe(25);

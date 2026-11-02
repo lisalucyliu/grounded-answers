@@ -367,7 +367,11 @@
         "Total requests: | 7,200",
         "Cost (total requests/1000 * $0.005) | $0.036/hour",
         "Data transfers from S3 to Amazon CloudFront are free of charge."
-      ]
+      ],
+      "caution": {
+        "reason": "The price comes from a cost example in the Live Streaming on AWS with Amazon S3 Implementation Guide, not from the pricing page. The example doesn't name a Region and may be out of date.",
+        "nextStep": "Check Amazon S3 pricing before you use this number."
+      }
     },
     {
       "id": "dx-exporting-revisions",

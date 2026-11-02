@@ -1,3 +1,5 @@
+import { readTurn } from './followUp.js';
+
 // Calls /api/answer and passes each newline-delimited JSON event to onEvent.
 // Pass an AbortSignal to cancel. Cancelling closes the connection, which is
 // what tells the server to stop the Claude stream.
@@ -74,4 +76,31 @@ export function splitSources(blocks, sections) {
   const citedUrls = new Set(sources.map((source) => source.url));
   const alsoRead = sections.filter((section) => !citedUrls.has(section.url));
   return { cited, alsoRead };
+}
+
+const MAX_REASONS = 3;
+
+// GA-3: the confidence badge, from the caution flags on the cited sections.
+// All flagged is low, some flagged is medium. None flagged or none cited is no badge (null).
+// Reasons don't repeat, and the next step comes from the first flagged source.
+export function confidence(cited) {
+  const flagged = cited.filter((source) => source.section?.caution);
+  if (flagged.length === 0) return null;
+  return {
+    level: flagged.length === cited.length ? 'low' : 'medium',
+    reasons: [...new Set(flagged.map((source) => source.section.caution.reason))].slice(0, MAX_REASONS),
+    nextStep: flagged[0].section.caution.nextStep,
+  };
+}
+
+// GA-3 for one turn, on a complete or stopped response. With the GA-4 marker there's no badge: GA-4 takes its place.
+export function turnConfidence(turn) {
+  const { blocks, noAnswer } = readTurn(turn);
+  return noAnswer ? null : confidence(splitSources(blocks, turn.sections ?? []).cited);
+}
+
+// GA-4: the live AWS search for this question. URLSearchParams writes spaces as "+" and "?" as "%3F".
+export function allResultsUrl(question) {
+  const query = new URLSearchParams({ searchPath: 'documentation', searchQuery: question, searchTab: 'all' });
+  return `https://docs.aws.amazon.com/search/doc-search.html?${query}`;
 }

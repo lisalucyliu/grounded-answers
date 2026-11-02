@@ -1,12 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { decideFollowUp, findLists, findPosition, visibleLists } from '../src/followUp.js';
 import { useFakeAnswer } from './fakeAnswer.js';
-import { ask, lastResponse, recordLiveRegions } from './helpers.js';
+import { ask, lastResponse, promptBox, recordLiveRegions } from './helpers.js';
 
 // GA-5 and GA-5c checks. Free: answers come from the fake answer in fakeAnswer.js, never from Claude.
 
 const F1 = 'What server-side encryption options can I use for S3 objects?';
 const THIRD = 'Tell me more about the third one.';
+const OUT_OF_RANGE = 'There are 4 options. Which one do you mean?';
 const F1_LIST = [{ name: 'SSE-S3' }, { name: 'SSE-KMS' }, { name: 'DSSE-KMS' }, { name: 'SSE-C' }];
 
 const requests = (page) => page.evaluate(() => window.__answerRequests ?? []);
@@ -43,6 +44,7 @@ test('parsing: positions and numbered lists', () => {
   expect(decideFollowUp('the fifth one', [F1_LIST]).kind).toBe('clarify');
   expect(decideFollowUp(THIRD, [[{ name: 'A' }], F1_LIST])).toEqual({
     kind: 'clarify',
+    question: 'Which option do you mean?',
     items: ['SSE-S3', 'SSE-KMS', 'DSSE-KMS', 'SSE-C'],
   });
   expect(decideFollowUp(THIRD, []).kind).toBe('normal');
@@ -113,7 +115,7 @@ test('GA-5c: out of range asks which one, and a pick resolves the item', async (
   await waitForAnswer(page);
 
   await ask(page, 'Tell me more about the fifth one.');
-  await expect(clarify(page).getByText('Which option do you mean?', { exact: true })).toBeVisible();
+  await expect(clarify(page).getByText(OUT_OF_RANGE, { exact: true })).toBeVisible();
   expect(await optionNames(page)).toEqual(['SSE-S3', 'SSE-KMS', 'DSSE-KMS', 'SSE-C']);
   expect(await requests(page)).toHaveLength(1); // No request for the question.
   // No thumbs, copy, sources or "Next Steps" on this turn.
@@ -123,7 +125,8 @@ test('GA-5c: out of range asks which one, and a pick resolves the item', async (
   // Cloudscape's LiveRegion re-announces the same text by toggling a final period, so ignore extra periods.
   const clarifyAnnouncements = () =>
     page.evaluate(
-      () => window.__liveAnnouncements.filter((text) => text.replace(/\.+$/, '') === 'Which option do you mean?').length
+      (question) => window.__liveAnnouncements.filter((text) => text.replace(/[.?]+$/, '') === question.replace(/\?$/, '')).length,
+      OUT_OF_RANGE
     );
   await expect.poll(clarifyAnnouncements).toBe(1);
 
@@ -137,7 +140,7 @@ test('GA-5c: out of range asks which one, and a pick resolves the item', async (
   expect(afterPick[1].resolved).toEqual({ position: 3, name: 'DSSE-KMS', opening: 'Option 3, DSSE-KMS: ' });
   expect(afterPick[1].history.at(-1)).toEqual({
     question: 'Tell me more about the fifth one.',
-    answer: 'Which option do you mean?',
+    answer: OUT_OF_RANGE,
   });
 
   // A second GA-5c question in a row is announced too.
@@ -263,12 +266,66 @@ test('a resolved answer stopped before any text keeps the opening, the stop stat
   await expect(lastResponse(page)).toHaveText(/^The third one, DSSE-KMS: it applies/);
 });
 
-test('the prompt group is named by its question', async ({ page }) => {
+test('B: out of range names the real count, and 2 lists keep the general question', async ({ page }) => {
+  expect(decideFollowUp('the second one', [[{ name: 'A' }]]).question).toBe('There is 1 option. Which one do you mean?');
+  // Both at once: 2 or more lists wins.
+  expect(decideFollowUp('the ninth one', [[{ name: 'A' }], F1_LIST]).question).toBe('Which option do you mean?');
+
   await useFakeAnswer(page, ['list']);
   await page.goto('/');
   await ask(page, F1);
   await waitForAnswer(page);
   await ask(page, 'Tell me more about the fifth one.');
-  await expect(clarify(page).getByRole('menubar', { name: 'Which option do you mean?' })).toBeVisible();
+  await expect(clarify(page).getByText(OUT_OF_RANGE, { exact: true })).toBeVisible();
+  // The prompt group's accessible name is the question text.
+  await expect(clarify(page).getByRole('menubar', { name: OUT_OF_RANGE, exact: true })).toBeVisible();
+});
+
+test('2 lists: the question and the prompt group name are "Which option do you mean?"', async ({ page }) => {
+  await useFakeAnswer(page, ['twoLists']);
+  await page.goto('/');
+  await ask(page, 'What do I need to set up before S3 replication works?');
+  await waitForAnswer(page);
+  await ask(page, 'Tell me more about the second one.');
+  await expect(clarify(page).getByText('Which option do you mean?', { exact: true })).toBeVisible();
+  await expect(clarify(page).getByRole('menubar', { name: 'Which option do you mean?', exact: true })).toBeVisible();
+});
+
+test('A: prompts hide while a response generates and come back when it is complete', async ({ page }) => {
+  await useFakeAnswer(page, ['list', 'holdResolved', 'resolved']);
+  await page.goto('/');
+  await ask(page, F1);
+  await waitForAnswer(page);
+  await ask(page, 'Tell me more about the fifth one.');
+  await expect(clarify(page).getByRole('menuitem')).toHaveCount(4);
+
+  // A pick hides them. The question stays, and focus moves from the picked button to the prompt input.
+  await clarify(page).getByRole('menuitem', { name: 'DSSE-KMS', exact: true }).click();
+  await expect(clarify(page).getByRole('menubar')).toHaveCount(0);
+  await expect(clarify(page).getByText(OUT_OF_RANGE, { exact: true })).toBeVisible();
+  await expect(promptBox(page)).toBeFocused();
+
+  // Stopped: back.
+  await expect(lastResponse(page)).toContainText('it applies');
+  await page.getByRole('button', { name: 'Stop generation' }).click();
+  await expect(clarify(page).getByRole('menuitem')).toHaveCount(4);
+
+  // A typed question hides them too. Complete: back.
+  await ask(page, 'Thanks. What about the second one?');
+  await expect(clarify(page).getByRole('menubar')).toHaveCount(0);
+  await waitForAnswer(page);
+  await expect(clarify(page).getByRole('menuitem')).toHaveCount(4);
+});
+
+test('A: prompts come back when the response ends in an error', async ({ page }) => {
+  await useFakeAnswer(page, ['list', 'error']);
+  await page.goto('/');
+  await ask(page, F1);
+  await waitForAnswer(page);
+  await ask(page, 'Tell me more about the fifth one.');
+  await clarify(page).getByRole('menuitem', { name: 'SSE-KMS', exact: true }).click();
+  await expect(clarify(page).getByRole('menubar')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Try again' }).waitFor();
+  await expect(clarify(page).getByRole('menuitem')).toHaveCount(4);
 });
 

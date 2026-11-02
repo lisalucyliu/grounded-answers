@@ -27,6 +27,14 @@ DXU = "https://docs.aws.amazon.com/data-exchange/latest/userguide/"
 DXA = "https://docs.aws.amazon.com/data-exchange/latest/apireference/"
 LSU = "https://docs.aws.amazon.com/solutions/latest/live-streaming-on-aws-with-amazon-s3/"
 
+# GA-3: optional flags on example pages, by section id. Our words, not doc text. Claude never receives them.
+CAUTIONS = {
+    "cost-example-1-s3-pricing": {
+        "reason": "The price comes from a cost example in the Live Streaming on AWS with Amazon S3 Implementation Guide, not from the pricing page. The example doesn't name a Region and may be out of date.",
+        "nextStep": "Check Amazon S3 pricing before you use this number.",
+    },
+}
+
 # (id, saved file, page URL, anchor, guide name, holds an answer?)
 SECTIONS = [
     ("UsingEncryption", "s3-UsingEncryption", S3U + "UsingEncryption.html", "UsingEncryption", S3_UG, True),
@@ -165,6 +173,7 @@ def main(raw_dir, out_path):
             "sectionHeading": heading,
             "url": url if tag == "h1" else f"{url}#{anchor}",
             "paragraphs": p.blocks,
+            **({"caution": CAUTIONS[sid]} if sid in CAUTIONS else {}),
         })
     answers = {sid: answer for sid, *_, answer in SECTIONS}
     with open(out_path, "w", encoding="utf-8") as f:

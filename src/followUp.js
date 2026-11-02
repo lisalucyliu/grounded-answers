@@ -3,6 +3,11 @@
 
 export const CLARIFY_QUESTION = 'Which option do you mean?';
 
+// Out of range: the question says how many options there are, using the real count.
+export function outOfRangeQuestion(count) {
+  return `${count === 1 ? 'There is 1 option' : `There are ${count} options`}. Which one do you mean?`;
+}
+
 const ORDINAL_WORDS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth'];
 const NUMBER_WORDS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const ORDINAL = `(${ORDINAL_WORDS.join('|')}|(?:10|[1-9])(?:st|nd|rd|th))`;
@@ -72,13 +77,16 @@ export function findLists(text) {
 // - normal: no position, or no list. The question goes to Claude with the chat history.
 // - resolved: 1 list and the position is in range. Code knows the item.
 // - clarify (GA-5c): 2 or more lists, or the position is out of range. Ask which one, using the latest list.
+//   The question is CLARIFY_QUESTION for 2 or more lists, and names the count when out of range.
 export function decideFollowUp(question, lists) {
   const found = findPosition(question);
   if (!found || lists.length === 0) return { kind: 'normal' };
   const list = lists.at(-1);
   const position = found.last ? list.length : found.position;
-  if (lists.length > 1 || position < 1 || position > list.length) {
-    return { kind: 'clarify', items: list.map((item) => item.name) };
+  const items = list.map((item) => item.name);
+  if (lists.length > 1) return { kind: 'clarify', question: CLARIFY_QUESTION, items };
+  if (position < 1 || position > list.length) {
+    return { kind: 'clarify', question: outOfRangeQuestion(list.length), items };
   }
   const name = list[position - 1].name;
   return { kind: 'resolved', resolved: { position, name, opening: `${found.phrase}, ${name}: ` } };
@@ -90,13 +98,51 @@ export function resolvePick(items, index) {
   return { position: index + 1, name, opening: `Option ${index + 1}, ${name}: ` };
 }
 
+export const NO_ANSWER_MARKER = '[NO_ANSWER]';
+
+// GA-4: Claude starts its response with the marker on its own first line when the docs don't answer the question.
+// The first line is held back until code knows whether it is the marker, so the marker never shows.
+// Returns { blocks, noAnswer }: the turn's text blocks in order, without the marker or anything still held back.
+// A stop or error before the marker line is complete counts as no marker, and the held-back text stays hidden.
+export function readTurn(turn) {
+  const blocks = Object.keys(turn.blocks)
+    .sort((a, b) => a - b)
+    .map((index) => turn.blocks[index]);
+  const text = blocks.map((block) => block.text).join('');
+  const start = text.trimStart();
+  const leading = text.length - start.length;
+
+  if (start.startsWith(NO_ANSWER_MARKER)) {
+    const rest = text.slice(leading + NO_ANSWER_MARKER.length);
+    if (turn.status === 'complete' || /\S|\n/.test(rest)) {
+      const cut = text.length - rest.trimStart().length;
+      return { blocks: dropCharacters(blocks, cut), noAnswer: true };
+    }
+    return { blocks: dropCharacters(blocks, text.length), noAnswer: false };
+  }
+  // Could still become the marker: nothing has ruled it out yet. A finished response has nothing more to come.
+  if (NO_ANSWER_MARKER.startsWith(start) && turn.status !== 'complete') {
+    return { blocks: dropCharacters(blocks, text.length), noAnswer: false };
+  }
+  return { blocks, noAnswer: false };
+}
+
+// Removes the first `count` characters from the blocks, which can span more than one block.
+function dropCharacters(blocks, count) {
+  let remaining = count;
+  return blocks.map((block) => {
+    const cut = Math.min(remaining, block.text.length);
+    remaining -= cut;
+    return { ...block, text: block.text.slice(cut) };
+  });
+}
+
 // The text a turn's response shows, in order: the code-written opening, then the streamed text.
 // Used for the copy button and for the history sent to Claude on the next turn.
 export function turnText(turn) {
-  if (turn.kind === 'clarify') return CLARIFY_QUESTION;
-  const streamed = Object.keys(turn.blocks)
-    .sort((a, b) => a - b)
-    .map((index) => turn.blocks[index].text)
+  if (turn.kind === 'clarify') return turn.clarifyQuestion;
+  const streamed = readTurn(turn)
+    .blocks.map((block) => block.text)
     .join('');
   return `${turn.resolved?.opening ?? ''}${streamed}`.trim();
 }

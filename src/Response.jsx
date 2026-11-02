@@ -1,4 +1,5 @@
 import Alert from '@cloudscape-design/components/alert';
+import Badge from '@cloudscape-design/components/badge';
 import Box from '@cloudscape-design/components/box';
 import Button from '@cloudscape-design/components/button';
 import ButtonGroup from '@cloudscape-design/components/button-group';
@@ -8,8 +9,8 @@ import SpaceBetween from '@cloudscape-design/components/space-between';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import TextContent from '@cloudscape-design/components/text-content';
 import { useEffect, useRef, useState } from 'react';
-import { LIST_ITEM, startsNewList, turnText } from './followUp.js';
-import { collectSources, splitSources } from './streamAnswer.js';
+import { LIST_ITEM, readTurn, startsNewList, turnText } from './followUp.js';
+import { allResultsUrl, collectSources, splitSources, turnConfidence } from './streamAnswer.js';
 
 export const STOPPED_MESSAGE = 'Stopped. This response is not complete.';
 export const ERROR_MESSAGE = "Something went wrong and the response didn't finish. Your question is saved.";
@@ -43,6 +44,60 @@ function CitationMarker({ number, url, section, fallbackTitle }) {
         [{number}]
       </Popover>
     </Box>
+  );
+}
+
+export const CONFIDENCE = {
+  low: { color: 'red', label: 'Low confidence', why: 'Why low confidence' },
+  medium: { color: 'grey', label: 'Medium confidence', why: 'Why medium confidence' },
+};
+
+// GA-3: the "Why?" text trigger next to the badge, styled like the [n] triggers.
+function WhyPopover({ result }) {
+  return (
+    <Box variant="span" color="text-status-info">
+      <Popover
+        triggerType="text"
+        header={CONFIDENCE[result.level].why}
+        size="medium"
+        dismissButton
+        dismissAriaLabel="Close"
+        renderWithPortal
+        content={
+          <SpaceBetween size="xs">
+            {result.reasons.map((reason) => (
+              <Box key={reason}>{reason}</Box>
+            ))}
+            <Box>{result.nextStep}</Box>
+          </SpaceBetween>
+        }
+      >
+        Why?
+      </Popover>
+    </Box>
+  );
+}
+
+// Code writes this heading. Claude doesn't, and it isn't in the copied text or the history.
+// The badge is inside the h2, so a screen reader reads it with the heading. "Why?" is outside, so it stays its own
+// button. An h2 under the page's h1, with the "Sources" h3 under it. Looks like h3, the same size as "Sources",
+// as on the live AWS Docs AI. Approved deviation (Lisa, Nov 2): a custom row with 8px gaps (the xs space size).
+function OverviewHeading({ result }) {
+  const badge = result && CONFIDENCE[result.level];
+  return (
+    <div data-testid="overview">
+      <SpaceBetween direction="horizontal" size="xs" alignItems="center">
+        <Box variant="h3" tagOverride="h2" padding="n">
+          Overview
+          {badge && (
+            <Box variant="span" display="inline-block" margin={{ left: 'xs' }} fontWeight="normal">
+              <Badge color={badge.color}>{badge.label}</Badge>
+            </Box>
+          )}
+        </Box>
+        {result && <WhyPopover result={result} />}
+      </SpaceBetween>
+    </div>
   );
 }
 
@@ -134,7 +189,7 @@ function buildContent(blocks, markersByBlock, sources, sectionsByUrl, opening) {
   return segments;
 }
 
-export default function Response({ turn, canRegenerate, onRegenerate, onTryAgain, onViewAllSources }) {
+export default function Response({ turn, canRegenerate, hideTryAgain, onRegenerate, onTryAgain, onViewAllSources }) {
   const [feedback, setFeedback] = useState(null);
   const errorRef = useRef(null);
   const viewAllRef = useRef(null);
@@ -143,22 +198,26 @@ export default function Response({ turn, canRegenerate, onRegenerate, onTryAgain
   useEffect(() => {
     if (turn.status === 'error') errorRef.current?.scrollIntoView({ block: 'nearest' });
   }, [turn.status]);
-  const blocks = Object.keys(turn.blocks)
-    .sort((a, b) => a - b)
-    .map((index) => turn.blocks[index]);
+  const { blocks, noAnswer } = readTurn(turn); // Without the GA-4 marker.
   const sections = turn.sections ?? [];
   const sectionsByUrl = new Map(sections.map((section) => [section.url, section]));
   const { sources, markersByBlock } = collectSources(blocks);
   const segments = buildContent(blocks, markersByBlock, sources, sectionsByUrl, turn.resolved?.opening);
-  const { cited, alsoRead } = splitSources(blocks, sections);
-  const sourceCount = cited.length + alsoRead.length;
   const plainText = turnText(turn); // Includes the code-written opening of a GA-5 answer.
   const isGenerating = turn.status === 'loading' || turn.status === 'streaming';
   const showActions = turn.status === 'stopped' || turn.status === 'complete';
+  // Overview: every complete or stopped response. While generating or in error, once there is text to head.
+  const showOverview = showActions || segments.length > 0;
+  // GA-3: only on a complete or stopped response, using the sections cited so far.
+  const confidenceResult = showActions ? turnConfidence(turn) : null;
+  // GA-4: the marker, or a complete response that cites nothing. An error response keeps only its error Alert.
+  const noAnswerFound = (noAnswer && showActions) || (turn.status === 'complete' && sources.length === 0);
 
   return (
     <div data-testid="response">
       <SpaceBetween size="m">
+        {showOverview && <OverviewHeading result={confidenceResult} />}
+
         {segments.length > 0 && (
           <div data-testid="response-text">
             {segments.map((segment, index) =>
@@ -196,7 +255,7 @@ export default function Response({ turn, canRegenerate, onRegenerate, onTryAgain
         {turn.status === 'stopped' && <StatusIndicator type="stopped">{STOPPED_MESSAGE}</StatusIndicator>}
         {turn.status === 'error' && (
           <div ref={errorRef}>
-            <Alert type="error" action={<Button onClick={onTryAgain}>Try again</Button>}>
+            <Alert type="error" action={hideTryAgain ? undefined : <Button onClick={onTryAgain}>Try again</Button>}>
               {ERROR_MESSAGE}
             </Alert>
           </div>
@@ -205,14 +264,14 @@ export default function Response({ turn, canRegenerate, onRegenerate, onTryAgain
         {/* Error state: unchanged from GA-1, every cited source and no "View all sources". */}
         {turn.status === 'error' && sources.length > 0 && <SourceList turnId={turn.id} sources={sources} />}
 
-        {showActions && (sources.length > 0 || sections.length > 0) && (
+        {showActions && sources.length > 0 && (
           <SpaceBetween size="xs">
-            {sources.length > 0 && <SourceList turnId={turn.id} sources={sources.slice(0, SOURCES_SHOWN)} />}
+            <SourceList turnId={turn.id} sources={sources.slice(0, SOURCES_SHOWN)} />
             {/* Approved style change: a normal Button, centered, to match the live AWS Docs AI. */}
             {sections.length > 0 && (
               <Box textAlign="center">
                 <Button ref={viewAllRef} onClick={() => onViewAllSources(() => viewAllRef.current?.focus())}>
-                  View all sources ({sourceCount})
+                  View all sources
                 </Button>
               </Box>
             )}
@@ -275,6 +334,16 @@ export default function Response({ turn, canRegenerate, onRegenerate, onTryAgain
               },
             ].filter((group) => group.items.length > 0)}
           />
+        )}
+
+        {noAnswerFound && (
+          <Alert type="info" i18nStrings={{ infoIconAriaLabel: 'Info' }}>
+            Looking for something else?{' '}
+            <Link href={allResultsUrl(turn.question)} external externalIconAriaLabel="Opens in a new tab" variant="primary">
+              Search all results on AWS Docs
+            </Link>
+            .
+          </Alert>
         )}
       </SpaceBetween>
     </div>

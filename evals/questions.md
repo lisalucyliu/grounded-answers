@@ -29,3 +29,5 @@ The 25 sections in `data/docs.json` were picked with these questions in view. 19
 Follow-up test FU: ask F1, wait for the full response, then ask "Tell me more about the third one." in the same chat. Pass = the response names DSSE-KMS and answers about it.
 
 Grading FU on our build: since GA-5, code writes the opening ("The third one, DSSE-KMS: "), so the name is always right. Grade FU on the body after the opening: does it answer about DSSE-KMS, or drift to another item?
+
+Caution flag (GA-3): the `caution` field on `cost-example-1-s3-pricing` was set with these questions in view, the same as decision 41. It is written as a rule for example pages, not for N1. The badge shows Low on N1 only when N1 cites only the cost example. It does not catch N5.
