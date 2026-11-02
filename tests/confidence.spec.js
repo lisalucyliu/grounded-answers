@@ -31,8 +31,8 @@ test('GA-4: a complete response with 0 cited shows the Alert and the encoded lin
   await waitForAnswer(page);
 
   await expect(alert(page)).toBeVisible();
-  // The space before the period is the link's external icon.
-  await expect(response(page)).toContainText('Looking for something else? Search all results on AWS Docs .');
+  // No period after the external link (Cloudscape Alert rule).
+  await expect(response(page)).toContainText(/Looking for something else\? Search all results on AWS Docs\s*$/);
   await expect(response(page)).not.toContainText('All results');
   const link = response(page).getByRole('link', { name: /^Search all results on AWS Docs/ });
   await expect(link).toHaveAttribute(

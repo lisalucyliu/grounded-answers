@@ -8,6 +8,7 @@ import Popover from '@cloudscape-design/components/popover';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import TextContent from '@cloudscape-design/components/text-content';
+import { spaceScaledXl } from '@cloudscape-design/design-tokens';
 import { useEffect, useRef, useState } from 'react';
 import { LIST_ITEM, readTurn, startsNewList, turnText } from './followUp.js';
 import { allResultsUrl, collectSources, splitSources, turnConfidence } from './streamAnswer.js';
@@ -82,10 +83,11 @@ function WhyPopover({ result }) {
 // The badge is inside the h2, so a screen reader reads it with the heading. "Why?" is outside, so it stays its own
 // button. An h2 under the page's h1, with the "Sources" h3 under it. Looks like h3, the same size as "Sources",
 // as on the live AWS Docs AI. Approved deviation (Lisa, Nov 2): a custom row with 8px gaps (the xs space size).
+// The minimum height is the row's height with a badge, so the text doesn't move when the badge arrives.
 function OverviewHeading({ result }) {
   const badge = result && CONFIDENCE[result.level];
   return (
-    <div data-testid="overview">
+    <div data-testid="overview" style={{ minHeight: spaceScaledXl }}>
       <SpaceBetween direction="horizontal" size="xs" alignItems="center">
         <Box variant="h3" tagOverride="h2" padding="n">
           Overview
@@ -206,8 +208,8 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
   const plainText = turnText(turn); // Includes the code-written opening of a GA-5 answer.
   const isGenerating = turn.status === 'loading' || turn.status === 'streaming';
   const showActions = turn.status === 'stopped' || turn.status === 'complete';
-  // Overview: every complete or stopped response. While generating or in error, once there is text to head.
-  const showOverview = showActions || segments.length > 0;
+  // Overview: every complete response. While generating, stopped or in error, only once there is text to head.
+  const showOverview = turn.status === 'complete' || segments.length > 0;
   // GA-3: only on a complete or stopped response, using the sections cited so far.
   const confidenceResult = showActions ? turnConfidence(turn) : null;
   // GA-4: the marker, or a complete response that cites nothing. An error response keeps only its error Alert.
@@ -255,7 +257,7 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
         {turn.status === 'stopped' && <StatusIndicator type="stopped">{STOPPED_MESSAGE}</StatusIndicator>}
         {turn.status === 'error' && (
           <div ref={errorRef}>
-            <Alert type="error" action={hideTryAgain ? undefined : <Button onClick={onTryAgain}>Try again</Button>}>
+            <Alert type="error" i18nStrings={{ errorIconAriaLabel: 'Error' }} action={hideTryAgain ? undefined : <Button onClick={onTryAgain}>Try again</Button>}>
               {ERROR_MESSAGE}
             </Alert>
           </div>
@@ -342,7 +344,6 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
             <Link href={allResultsUrl(turn.question)} external externalIconAriaLabel="Opens in a new tab" variant="primary">
               Search all results on AWS Docs
             </Link>
-            .
           </Alert>
         )}
       </SpaceBetween>

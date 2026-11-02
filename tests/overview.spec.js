@@ -16,7 +16,7 @@ const stop = (page) => page.getByRole('button', { name: 'Stop generation' }).cli
 const tryAgain = (page) => page.getByRole('button', { name: 'Try again' });
 const announcements = (page) => page.evaluate(() => window.__liveAnnouncements);
 
-test('Overview: on complete, GA-4 and stopped responses, above the text', async ({ page }) => {
+test('Overview: on complete, GA-4 and stopped responses, above the text, and not on a stop before any text', async ({ page }) => {
   await useFakeAnswer(page, ['full', 'uncited', 'hold', 'holdEmpty']);
   await page.goto('/');
 
@@ -43,7 +43,8 @@ test('Overview: on complete, GA-4 and stopped responses, above the text', async 
   await expect(overview(page)).toHaveCount(0);
   await stop(page);
   await toolbar(page).waitFor();
-  await expect(overview(page)).toBeVisible();
+  await expect(response(page)).toContainText(STOPPED);
+  await expect(overview(page)).toHaveCount(0);
 });
 
 test('Overview: on resolved follow-ups, not on GA-5c question turns', async ({ page }) => {
@@ -152,6 +153,14 @@ test('announcement: badge text comes first, for Low, Medium and stopped; nothing
   await expect(lastResponse(page)).toContainText('[2]');
   await stop(page);
   await expect.poll(() => stopAnnouncementCount(page)).toBe(1);
+});
+
+test('error Alert: the icon has a screen reader label', async ({ page }) => {
+  await useFakeAnswer(page, ['error']);
+  await page.goto('/');
+  await ask(page, F1);
+  await expect(tryAgain(page)).toBeVisible();
+  await expect(response(page).getByRole('img', { name: 'Error', exact: true })).toHaveCount(1);
 });
 
 test('Try again: hidden on every error turn while any response generates, back after', async ({ page }) => {

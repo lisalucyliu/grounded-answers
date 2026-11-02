@@ -39,8 +39,8 @@ A redesign of AWS Docs AI, the AI answer feature on docs.aws.amazon.com. This re
   - Decision 58, shadow (Lisa, Oct 26): override shadowCard through the Cloudscape theming API with the soft shadow only, to match the live AWS Docs AI. Approved exception to "no hardcoded values". Built in round 3.
   - Decision 62, footer text: keep "Please double check responses". The AWS baseline uses the same text.
   - Decision C, GA-3 popover copy (Lisa, Nov 2): the price comes from the Live Streaming on AWS with Amazon S3 Implementation Guide, not the S3 User Guide, and the example names no Region. Built in round 4.
-  - Overview row (Lisa, Nov 2): a custom row, logged as a deviation, because Header has no slot that fits. Header's `counter` takes text only and its `info` slot is meant for Info links. It's SpaceBetween `direction="horizontal" size="xs"` holding Box `variant="h3" tagOverride="h2"` and the "Why?" Popover, with the Badge in a Box span with `margin left xs`. Lisa's GA-3 frame says 10px, but Cloudscape has no 10px space token, so Lisa chose the nearest token: 8px (Nov 2). Measured 8px and 8px, light and dark, at 1440 and 375. The h2 looks like h3 (18px bold), the same size as "Sources", as on the live AWS Docs AI (`baseline/F1.png`).
-  - GA-4 Alert copy, a deviation from the AWS baseline (Lisa, Nov 2): "Looking for something else? Search all results on AWS Docs." AWS says "Use the All results tab for more results." Reason: the All results tab is disabled in this build, so that copy points to a tab that doesn't work.
+  - Overview row (Lisa, Nov 2): a custom row, logged as a deviation, because Header has no slot that fits. Header's `counter` takes text only and its `info` slot is meant for Info links. It's SpaceBetween `direction="horizontal" size="xs"` holding Box `variant="h3" tagOverride="h2"` and the "Why?" Popover, with the Badge in a Box span with `margin left xs`. Lisa's GA-3 frame says 10px, but Cloudscape has no 10px space token, so Lisa chose the nearest token: 8px (Nov 2). Measured 8px and 8px, light and dark, at 1440 and 375. The row has a minimum height of `spaceScaledXl` (24px), so the text stays put when the badge arrives (Lisa, Nov 2). The h2 looks like h3 (18px bold), the same size as "Sources", as on the live AWS Docs AI (`baseline/F1.png`).
+  - GA-4 Alert copy, a deviation from the AWS baseline (Lisa, Nov 2): "Looking for something else? Search all results on AWS Docs", with no period after the external link (Cloudscape Alert: descriptions ending with an external link icon "should not have a period after it"). AWS says "Use the All results tab for more results." Reason: the All results tab is disabled in this build, so that copy points to a tab that doesn't work.
 - Ask before adding anything that isn't in the request.
 
 ## Designs
@@ -100,10 +100,10 @@ Decisions 20, 47, 59 and 60. Option 3 of decision 60 (Lisa, Nov 2) added the mar
 
 1. **Trigger.** The [NO_ANSWER] marker, or a complete response that cites 0 sources. Not on an error response.
 2. **Marker.** The system prompt adds: "When the provided documentation does not answer the question, start your response with [NO_ANSWER] on its own first line, then write your normal response. In every other case, never write [NO_ANSWER]." `readTurn` in `src/followUp.js` holds back the start of the text until it can't be the marker, or the marker's line is complete. The marker is never on screen, in the live region, in the copied text or in the history. Stopped before the marker's line is complete counts as no marker, and the held-back text stays hidden.
-3. **Layout.** The response text as Claude wrote it, Sources and "View all sources" if it cites any, the normal button group (thumbs up, thumbs down, divider, copy), then a Cloudscape info Alert. No Next Steps, no support prompt group and no confidence badge. The 0-cited panel stays as it was (decision 47).
-4. **Alert copy.** "Looking for something else? Search all results on AWS Docs." "Search all results on AWS Docs" is a primary external Link to the live AWS search, opening in a new tab: `https://docs.aws.amazon.com/search/doc-search.html?searchPath=documentation&searchQuery=<question>&searchTab=all`. The question is encoded with `URLSearchParams` (`allResultsUrl` in `src/streamAnswer.js`): spaces as "+", "?" as "%3F", other characters with normal URL encoding.
-5. **Defaults for Lisa to confirm.** Stopped after the marker's line is complete: GA-4 shows on the partial text. Error after the marker: only the error Alert.
-6. **Real runs, Nov 2, with the marker.** N2: marker, cited `dx-auto-export-console` and `dx-revision-export-keypatterns`, GA-4 shows. N4: marker, 0 cited, GA-4 shows. N1: marker, cited `cost-example-1-s3-pricing`, GA-4 shows, no badge. F2: no marker, 3 cited, no GA-4. Before the marker, N2 cited the same kind of nearby sections and GA-4 did not show.
+3. **Layout.** The response text as Claude wrote it, Sources and "View all sources" if it cites any, the normal button group (thumbs up, thumbs down, divider, copy), then a Cloudscape info Alert. No Next Steps and no support prompt group. The confidence badge follows the GA-3 rule, in the Overview heading above the text. With 0 cited, GA-4 only. The 0-cited panel stays as it was (decision 47).
+4. **Alert copy.** "Looking for something else? Search all results on AWS Docs", with no end period. "Search all results on AWS Docs" is a primary external Link to the live AWS search, opening in a new tab: `https://docs.aws.amazon.com/search/doc-search.html?searchPath=documentation&searchQuery=<question>&searchTab=all`. The question is encoded with `URLSearchParams` (`allResultsUrl` in `src/streamAnswer.js`): spaces as "+", "?" as "%3F", other characters with normal URL encoding.
+5. **Stops and errors.** Stopped after the marker's line is complete: GA-4 shows on the partial text (Lisa, Nov 2). Error after the marker: only the error Alert.
+6. **Real runs, Nov 2, with the marker.** N2: marker, cited `dx-auto-export-console` and `dx-revision-export-keypatterns`, GA-4 shows. N4: marker, 0 cited, GA-4 shows. N1: marker, cited `cost-example-1-s3-pricing`, GA-4 shows. That run had no badge under the old rule. The new rule (GA-3, step 3) would show Low with GA-4, checked with a fake answer only, no paid run since. F2: no marker, 3 cited, no GA-4. Before the marker, N2 cited the same kind of nearby sections and GA-4 did not show.
 
 ## GA-3: confidence badge
 
@@ -111,19 +111,19 @@ Decisions 61 and C to F.
 
 1. **The flag.** A section in `data/docs.json` can have an optional `caution` with `reason` and `nextStep`. It's a rule for example pages, not for one question. It's set only on `cost-example-1-s3-pricing`. These are our words, not doc text. `scripts/extract_docs.py` keeps them in `CAUTIONS`, so a rebuild doesn't lose them.
 2. **Code only (E).** The `sections` event sends `caution` to the browser. `caution` never goes to Claude. Checked Nov 2: the request body to Claude, for 4 test requests, is byte-identical before and after. Same length and same SHA-256, with a stubbed fetch. `tests/confidence.spec.js` keeps checking this.
-3. **Rule (`confidence` in `src/streamAnswer.js`).** Complete response: all cited sections flagged = red Badge "Low confidence". Some flagged = grey Badge "Medium confidence". None flagged = no badge. 0 cited = GA-4, no badge. With the [NO_ANSWER] marker = GA-4, no badge, even if flagged sections are cited.
+3. **Rule (`confidence` in `src/streamAnswer.js`).** Complete response: all cited sections flagged = red Badge "Low confidence". Some flagged = grey Badge "Medium confidence". None flagged = no badge. 0 cited = GA-4, no badge. The rule runs on the cited sections whether or not the [NO_ANSWER] marker is there (Lisa, Nov 2, N1, replaces "with the marker, show no badge"): marker and cited flagged sections = the badge and GA-4 together. Marker and 0 cited = GA-4 only.
 4. **Stopped (F).** Uses the sections cited so far, the same rule as the Sources list. Stopped with 0 cited: no badge and no Alert. No badge while generating or on an error response. The brief doesn't name the error case, so this is a default for Lisa to confirm.
-5. **Placement.** In the Overview heading, at the top of the response, on long answers too. Next to the heading, outside it, a "Why?" Popover text trigger in Box `color="text-status-info"`, same style as the [n] triggers. Medium Popover (310px) with a dismiss button and `renderWithPortal`. Header "Why low confidence" or "Why medium confidence". Body: 1 to 3 reasons from the flags with no repeats, then one next step, from the first flagged source. Sources stay under the answer. The badge appears when the response ends, in the heading's row, so the text doesn't move.
-6. **What it doesn't catch (D).** The flag was set with the eval questions in view. The badge shows Low on N1 only when N1 cites only the cost example with no marker, and it does not catch N5. Real runs Nov 2: before the marker, N1 cited only the cost example, so Low. With the marker, N1 wrote the marker, so GA-4 and no badge.
+5. **Placement.** In the Overview heading, at the top of the response, on long answers too. Next to the heading, outside it, a "Why?" Popover text trigger in Box `color="text-status-info"`, same style as the [n] triggers. Medium Popover (310px) with a dismiss button and `renderWithPortal`. Header "Why low confidence" or "Why medium confidence". Body: 1 to 3 reasons from the flags with no repeats, then one next step, from the first flagged source. Sources stay under the answer. The badge appears when the response ends, in the heading's row. The text doesn't move, because the row has a minimum height of `spaceScaledXl` (24px), its height with a badge (Lisa, Nov 2). Measured 0px, light and dark, at 1440 and 375.
+6. **What it doesn't catch (D).** The flag was set with the eval questions in view. The badge shows Low on N1 only when N1 cites only the cost example, and it does not catch N5. Real runs Nov 2: N1 cited only the cost example both before and after the marker was added.
 
 ## Overview heading
 
 Lisa, Nov 2.
 
-1. **Where.** Code writes "Overview" at the top of every complete and stopped response, resolved follow-ups, GA-4, and error turns that kept partial text. Not on GA-5c question turns or error turns with no text. Claude doesn't write it, and it isn't in the copied text or the history.
+1. **Where.** Code writes "Overview" at the top of every complete response, stopped response with text, resolved follow-up, GA-4, and error turn that kept partial text. Not on GA-5c question turns, or on stops or errors with no text (Lisa, Nov 2). Claude doesn't write it, and it isn't in the copied text or the history.
 2. **Level.** h2. The page's h1 is the first question, and "Sources" under the response is an h3, so h2 fills the gap between them and each turn's "Sources" sits under its own Overview. The Sources panel title is also an h2. Looks like h3, as on the live AWS Docs AI, where Overview and Sources are the same size.
 3. **Badge.** Inside the h2, so the accessible name is "Overview Low confidence" (measured in Chromium, no comma, since a name comes from the text). "Why?" is outside it, its own button.
-4. **Defaults for Lisa to confirm.** It appears as soon as there is text to head, so nothing moves when the response ends. A stop before any text still shows it, above the stop status, because the brief lists stopped responses with no exception.
+4. **While streaming.** It appears as soon as there is text to head (Lisa, Nov 2), so the text doesn't move when the response ends.
 
 ## Accessibility
 
@@ -131,7 +131,8 @@ Lisa, Nov 2.
 - After a stop, keyboard focus moves to the prompt input.
 - A polite live region announces "Stopped. This response is not complete." one time per stop.
 - The same live region also announces the finished response text and the error message. Cloudscape's Gen AI chat pattern says to announce each new message. This was added during the design review.
-- When a response with a badge finishes, the badge text comes first: "Low confidence. <response text>" or "Medium confidence. <response text>". A stop too, as a default for Lisa to confirm: "Low confidence. Stopped. This response is not complete." "Overview" isn't announced.
+- When a response with a badge finishes, the badge text comes first: "Low confidence. <response text>" or "Medium confidence. <response text>". A stop too (Lisa, Nov 2): "Low confidence. Stopped. This response is not complete." "Overview" isn't announced.
+- The error Alert's icon is labeled "Error" (`i18nStrings.errorIconAriaLabel`), the same way the info Alert's icon is labeled "Info". `statusIconAriaLabel` is deprecated and isn't in the live Alert API, so `i18nStrings` it is. "Error" is Cloudscape's own en-GB default for this string.
 - Source links say "Opens in a new tab" to screen readers. Every external link, in the lists and in the popover, uses `external` with `externalIconAriaLabel="Opens in a new tab"`.
 - Each [n] popover trigger is named "Source n".
 - After a GA-5c pick, keyboard focus moves to the prompt input, since the prompts hide.
@@ -171,7 +172,7 @@ Playwright tests call the real Claude API, so every run costs money. Run only wh
 - `tests/error.spec.js`: 1 real stream. Needs the dev server started with `FORCE_ERROR=1`.
 - `tests/followups.spec.js`: GA-5 and GA-5c checks, free: parsing, numbered list rendering, "the third one", out of range and its copy, a pick, a typed answer, 2 lists, no list, and prompts hiding and coming back. Uses the fake answer.
 - `tests/confidence.spec.js`: GA-4 and GA-3 checks, free: the Alert and its encoded link, Low, Medium, none, stopped, the Why? popover, and caution missing from the browser request and the Claude request (stubbed fetch, nothing leaves the machine).
-- `tests/noAnswerMarker.spec.js`: GA-4 marker checks, free: the hold-back rule, never on screen, not copied, not in history, GA-4 with cited sources, no badge, and stops and errors around the marker line.
+- `tests/noAnswerMarker.spec.js`: GA-4 marker checks, free: the hold-back rule, never on screen, not copied, not in history, GA-4 with cited sources, the badge and GA-4 together, GA-4 only at 0 cited, and stops and errors around the marker line.
 - `tests/overview.spec.js`: Overview heading, announcement and Try again checks, free: each turn type, badge inside the heading, the accessible name, 8px gaps, the announced text, and Try again hiding.
 - `tests/sources.spec.js`: GA-2 checks, free. Run `npx playwright test tests/sources.spec.js` with `npm run dev` running. It uses the fake answer, never Claude.
 - The fake answer lives in `tests/fakeAnswer.js`. `useFakeAnswer(page, [...])` adds a script to the Playwright test browser that replaces `fetch` for `/api/answer` only, and plays back the real 25-section `sections` event plus 6 cited sentences from a real F4 answer. Per request it can be `full`, `uncited` (no citations) or `hold` (2 cited sentences, then waits for Stop). Like `FORCE_ERROR`, it can't run in production: it exists only inside Playwright's test browser, and nothing in the app or server code reads it.
@@ -179,8 +180,13 @@ Playwright tests call the real Claude API, so every run costs money. Run only wh
 
 ## Open checks
 
-- [ ] **Real Vercel stop path.** After the first deploy, stop 3 responses on the live site and check the Vercel function logs for `[answer] stream stopped`. The local result comes from the dev-only simulation, so this hasn't been proven on Vercel yet.
-- [ ] **VoiceOver.** Confirm the live region announces "Stopped. This response is not complete." once per stop.
+- [ ] **Real Vercel stop path. After the first deploy, stop 3 responses on the live site and check the Vercel function logs for `[answer] stream stopped`. The local result comes from the dev-only simulation, so this hasn't been proven on Vercel yet.
+- [ ] **VoiceOver.** Lisa's hand pass:
+  - [ ] The live region announces "Stopped. This response is not complete." once per stop.
+  - [ ] The GA-4 Alert: is it announced when it appears? The live region reads the response text, not the Alert.
+  - [ ] Repeated names across turns: every "Why?" and every "View all sources" has the same name.
+  - [ ] The pause in "Overview Low confidence": the name has no comma, so listen for whether the two parts run together.
+  - [ ] Two GA-5c groups in one chat with the same accessible name.
 
 ## Open design decisions (from the design review on 2026-10-26)
 
@@ -202,7 +208,9 @@ Known, not urgent. Revisit later.
 - **LiveRegion `reannounce()`.** The public LiveRegion has no ref and no functions (installed `live-region/interfaces.d.ts` and the cloudscape.design API, checked Oct 27). `reannounce()` is internal only, so the GA-5c repeat announcement keeps its clear-then-set approach.
 - **Footer "Please double check".** Cloudscape writing guidelines avoid "please". The live AWS Docs AI footer has the same text ("Ask Docs is AI and can make mistakes. Please double check responses. By chatting, you agree to this disclaimer.", AWS baseline, `baseline/F1.png`), so it stays (decision 62).
 - **Stop status at 375px.** The stop status breaks mid-word at 375px. It follows a Cloudscape text rule (decision 49).
-- **Two GA-5c groups in one chat.** They can have the same accessible name. Check in Lisa's VoiceOver pass.
+- **Two GA-5c groups in one chat.** They can have the same accessible name. On the VoiceOver checklist in Open checks.
+- **0-cited response on narrow screens.** Below 688px, a 0-cited response has no way to reach Sources: the button is gone and the rail is hidden. Parked with decision 49.
+- **Badge row with the panel open at 768px.** The chat is about 228px wide there. How "Overview", the badge and "Why?" wrap is not checked yet.
 - **More than 5 GA-5c prompts.** Cloudscape: "Don't display more than five support prompts at a time." A list of 6 to 10 items breaks that. F1 has 4.
 
 ## Doc data

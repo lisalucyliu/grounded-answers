@@ -72,7 +72,7 @@ const COST_MIXED_ANSWER = [
 const NO_ANSWER_TEXT = NO_ANSWER_MESSAGE;
 const MARKER_UNCITED_ANSWER = [['[NO_', null], ['ANSWER]\n', null], [NO_ANSWER_TEXT, null]];
 const MARKER_CITED_ANSWER = [['[NO_ANSWER]\n' + NO_ANSWER_TEXT, null], [' Export jobs copy revisions to Amazon S3.', 'dx-exporting-revisions']];
-// Marker plus the one flagged section: without the marker this would be a Low badge.
+// Marker plus the one flagged section (cost-example-1-s3-pricing): GA-4 and a Low badge together.
 const MARKER_FLAGGED_ANSWER = [['[NO_ANSWER]\n\n', null], ...COST_ONLY_ANSWER];
 
 function title(section) {

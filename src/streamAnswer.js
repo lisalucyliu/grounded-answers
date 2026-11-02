@@ -93,10 +93,9 @@ export function confidence(cited) {
   };
 }
 
-// GA-3 for one turn, on a complete or stopped response. With the GA-4 marker there's no badge: GA-4 takes its place.
+// GA-3 for one turn, on a complete or stopped response. Runs on the cited sections, with or without the GA-4 marker.
 export function turnConfidence(turn) {
-  const { blocks, noAnswer } = readTurn(turn);
-  return noAnswer ? null : confidence(splitSources(blocks, turn.sections ?? []).cited);
+  return confidence(splitSources(readTurn(turn).blocks, turn.sections ?? []).cited);
 }
 
 // GA-4: the live AWS search for this question. URLSearchParams writes spaces as "+" and "?" as "%3F".

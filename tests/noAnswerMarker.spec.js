@@ -117,20 +117,36 @@ test('GA-4 shows with the marker even when the response cites sources, and they 
   await expect(lastResponse(page)).not.toContainText('NO_ANSWER');
 });
 
-test('with the marker there is no badge, even when the only cited section is flagged', async ({ page }) => {
-  await useFakeAnswer(page, ['markerFlagged', 'costOnly']);
+test('marker and a cited flagged section: Overview with the badge and "Why?", the text, then GA-4', async ({ page }) => {
+  await recordLiveRegions(page);
+  await useFakeAnswer(page, ['markerFlagged']);
+  await page.goto('/');
+  await ask(page, 'What does S3 Standard storage cost per GB in us-east-1?');
+  await toolbar(page).waitFor();
+
+  const heading = response(page).getByRole('heading', { level: 2, name: 'Overview Low confidence', exact: true });
+  const why = response(page).getByTestId('overview').getByRole('button', { name: 'Why?', exact: true });
+  await expect(heading).toBeVisible();
+  await expect(why).toBeVisible();
+  await expect(lastResponse(page)).toContainText('$0.023');
+  await expect(lastResponse(page)).not.toContainText('NO_ANSWER');
+  await expect(alert(page)).toBeVisible();
+
+  const y = async (locator) => (await locator.boundingBox()).y;
+  expect(await y(heading)).toBeLessThan(await y(lastResponse(page)));
+  expect(await y(lastResponse(page))).toBeLessThan(await y(alert(page)));
+
+  await expect.poll(() => page.evaluate(() => window.__liveAnnouncements)).toContainEqual(expect.stringMatching(/^Low confidence\. The documentation cites/));
+});
+
+test('marker and 0 cited: GA-4 only, no badge', async ({ page }) => {
+  await useFakeAnswer(page, ['markerUncited']);
   await page.goto('/');
   await ask(page, N2);
   await toolbar(page).waitFor();
-  await expect(lastResponse(page)).toContainText('$0.023');
   await expect(alert(page)).toBeVisible();
   await expect(response(page).getByText(/(Low|Medium) confidence/)).toHaveCount(0);
   await expect(response(page).getByRole('button', { name: 'Why?' })).toHaveCount(0);
-  await expect(response(page).getByTestId('sources').locator('[id^="source-"]')).toHaveCount(1);
-
-  // The same section with no marker has the badge, so the marker is what removed it.
-  await ask(page, 'And per month?');
-  await expect(response(page).getByRole('heading', { level: 2, name: 'Overview Low confidence' })).toBeVisible();
 });
 
 test('stopped before the marker line is complete: no marker, no fragment, no GA-4', async ({ page }) => {
