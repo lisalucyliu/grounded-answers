@@ -41,6 +41,7 @@ A redesign of AWS Docs AI, the AI answer feature on docs.aws.amazon.com. This re
   - Decision C, GA-3 popover copy (Lisa, Nov 2): the price comes from the Live Streaming on AWS with Amazon S3 Implementation Guide, not the S3 User Guide, and the example names no Region. Built in round 4.
   - Overview row (Lisa, Nov 2): a custom row, logged as a deviation, because Header has no slot that fits. Header's `counter` takes text only and its `info` slot is meant for Info links. It's SpaceBetween `direction="horizontal" size="xs"` holding Box `variant="h3" tagOverride="h2"` and the "Why?" Popover, with the Badge in a Box span with `margin left xs`. Lisa's GA-3 frame says 10px, but Cloudscape has no 10px space token, so Lisa chose the nearest token: 8px (Nov 2). Measured 8px and 8px, light and dark, at 1440 and 375. The row has a minimum height of `spaceScaledXl` (24px), so the text stays put when the badge arrives (Lisa, Nov 2). The h2 looks like h3 (18px bold), the same size as "Sources", as on the live AWS Docs AI (`baseline/F1.png`).
   - GA-4 Alert copy, a deviation from the AWS baseline (Lisa, Nov 2): "Looking for something else? Search all results on AWS Docs", with no period after the external link (Cloudscape Alert: descriptions ending with an external link icon "should not have a period after it"). AWS says "Use the All results tab for more results." Reason: the All results tab is disabled in this build, so that copy points to a tab that doesn't work.
+  - GA-3 (confidence badge) shows only when the response ends, and it never changes after that. Known trade-off: on N1 (S3 storage price), the reader can see the price for a few seconds before the Low badge. Rejected: show the badge when the first flagged source is cited, because then it can change while the response streams (Lisa, Nov 2).
 - Ask before adding anything that isn't in the request.
 
 ## Designs
@@ -93,6 +94,8 @@ On AWS Docs AI, "Tell me more about the third one." got the wrong item 0 of 3 ti
 5. **Prompt caching and cost.** One `cache_control: {type: 'ephemeral'}` breakpoint (5-minute cache) on the last doc section caches the stable prefix: the system prompt and all 25 sections, about 30,000 tokens. The marker doesn't change what Claude receives (Claude API prompt caching docs: caching is a prefix match, and the marker isn't content). Everything after it (question, history, resolved fact) is per request. The server logs `input_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens` and `output_tokens` for each finished stream. Measured Oct 27: F1 wrote 30,027 cache tokens (about $0.084 with output); the follow-up read 30,027 from cache, 792 uncached (about $0.017 with output, versus about $0.071 uncached). Any change to the system prompt or the doc set changes the prefix, so the first request after it writes the cache again.
 
 **The system prompt must be locked before the evals.** Any change to it after that means rerunning them. Changes so far: numbered lists with "name:" items (Oct 26); numbered lists for every list, no dashes or bullets; continue the code-written opening in lowercase (Oct 27); the [NO_ANSWER] marker for GA-4 (Nov 2). Locked Nov 2, 2026 (model claude-sonnet-5-5, effort low). The test "eval lock: the request to Claude has not changed" in `tests/evalLock.spec.js` holds the lock. It compares a SHA-256 of the request and `data/docs.json` with a stored value. Only Lisa approves a new hash, and a new lock means rerunning the evals.
+
+**After the evals, do not change the code that reads Claude's response** (the [NO_ANSWER] marker rule, the GA-3 badge rule, the GA-4 (no answer hand-off) trigger, the Sources rules) without asking Lisa. The eval lock does not cover this code, and a change can change the graded states (Lisa, Nov 2).
 
 ## GA-4: no answer found
 
@@ -214,6 +217,7 @@ Known, not urgent. Revisit later.
 - **Two GA-5c groups in one chat.** They can have the same accessible name. On the VoiceOver checklist in Open checks.
 - **0-cited response on narrow screens.** Below 688px, a 0-cited response has no way to reach Sources: the button is gone and the rail is hidden. Parked with decision 49.
 - **Badge row with the panel open at 768px.** The chat is about 228px wide there. How "Overview", the badge and "Why?" wrap is not checked yet.
+- **Next Steps.** Next Steps were left out of the build. AWS Docs AI shows Next Steps (suggested questions) under normal responses, and Lisa's Oct 21 decision kept them, but the build never added them. Adding them would change the system prompt and the eval lock. The case study must say they were left out (Lisa, Nov 2).
 - **More than 5 GA-5c prompts.** Cloudscape: "Don't display more than five support prompts at a time." A list of 6 to 10 items breaks that. F1 has 4.
 
 ## Doc data
