@@ -129,6 +129,9 @@ const KINDS = {
   errorMarker: () => [...answerEvents({ sentences: [['[NO_ANSWER]\n' + NO_ANSWER_TEXT, null]] }), { type: 'error' }],
 };
 
+// The events of one fake answer, ending the way a finished stream ends, for code that reads them outside the browser.
+export const fakeEvents = (kind) => [...KINDS[kind](), { type: 'done', stopReason: 'end_turn' }];
+
 // answers: one entry per request, in order: "full", "uncited", "hold", "list", "twoLists", "dashes",
 // "skipped", "resolved", "costOnly", "costMixed", "holdCost", "holdUncited", "holdResolved", "holdEmpty",
 // "error", "errorEmpty", "errorMarker", "markerUncited", "markerCited", "markerFlagged", "holdMarkerPartial",

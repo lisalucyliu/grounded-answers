@@ -1,0 +1,27 @@
+{
+  "id": "F1",
+  "question": "What server-side encryption options can I use for S3 objects?",
+  "effort": "medium",
+  "visibleText": "S3 gives you four server-side encryption options. Every bucket already encrypts new objects by default, so you only need to choose one if you want something other than the default.\n\n1. SSE-S3: server-side encryption with Amazon S3 managed keys is the default encryption configuration for every bucket. Amazon S3 encrypts each object with a unique key, encrypts that key with a key it rotates regularly, and uses 256-bit AES-GCM. There are no additional fees for SSE-S3.\n\n2. SSE-KMS: server-side encryption with AWS KMS keys. It lets you centrally manage KMS keys and define policies that control how and by whom they can be used. The KMS keys must be in the same Region as the bucket, and there are additional charges for using AWS KMS. S3 Bucket Keys can reduce AWS KMS request costs by up to 99 percent.\n\n3. DSSE-KMS: dual-layer server-side encryption with AWS KMS keys. It applies two independent layers of AES-256 encryption, which helps you meet compliance standards that require multilayer encryption. It has slightly higher latency and higher cost than standard SSE-KMS. S3 Bucket Keys aren't supported for DSSE-KMS.\n\n4. SSE-C: server-side encryption with customer-provided keys. You manage the keys while Amazon S3 manages encryption and decryption. You provide the key with each request, and S3 purges it from memory after use.\n\nFor setting these, you can specify the encryption type in your PUT requests, or update the default encryption configuration on the destination bucket. Per-request, you can use SSE-KMS, DSSE-KMS, or SSE-C. For a bucket default other than SSE-S3, you can use SSE-KMS or DSSE-KMS. Also note that changing the bucket default to SSE-KMS doesn't change the encryption of existing objects. To re-encrypt them, you can use S3 Batch Operations with a Copy objects action.",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Protecting data with encryption · Amazon Simple Storage Service User Guide",
+    "Using server-side encryption with Amazon S3 managed keys (SSE-S3) · Amazon Simple Storage Service User Guide",
+    "Using server-side encryption with AWS KMS keys (SSE-KMS) · Amazon Simple Storage Service User Guide",
+    "Using server-side encryption with AWS KMS keys (SSE-KMS) · Amazon Simple Storage Service User Guide › Amazon S3 Bucket Keys",
+    "Using dual-layer server-side encryption with AWS KMS keys (DSSE-KMS) · Amazon Simple Storage Service User Guide",
+    "Replicating encrypted objects (SSE-S3, SSE-KMS, DSSE-KMS, SSE-C) · Amazon Simple Storage Service User Guide › Replicating objects encrypted with SSE-C"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 23,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 925
+  },
+  "timeToFirstTextMs": 914,
+  "totalMs": 5970,
+  "costUsd": 0.012305
+}

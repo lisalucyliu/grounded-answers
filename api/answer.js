@@ -76,7 +76,57 @@ if (process.env.VERCEL_ENV !== 'production') {
   } catch {}
 }
 
-const client = new Anthropic(); // Reads ANTHROPIC_API_KEY from the environment.
+export const client = new Anthropic(); // Reads ANTHROPIC_API_KEY from the environment.
+
+// The one place that builds the request to Claude. POST and scripts/run_evals.js both call it,
+// so they can't drift apart. It takes no effort value: the deployed app always sends the one written here.
+export function claudeRequest({ question, history = [], resolved = null }) {
+  return {
+    model: MODEL,
+    max_tokens: 16000,
+    output_config: { effort: 'low' },
+    system: SYSTEM_PROMPT,
+    messages: buildMessages(history, question, resolved),
+  };
+}
+
+// Every section sent to Claude, so the browser can list cited and not-cited sources.
+// caution (GA-3) is for the confidence badge in the browser. searchResults() never sends it to Claude.
+export function sectionsEvent() {
+  return {
+    type: 'sections',
+    sections: docs.sections.map(({ id, url, pageTitle, guideName, sectionHeading, caution }) => ({
+      id,
+      url,
+      pageTitle,
+      guideName,
+      sectionHeading,
+      caution,
+    })),
+  };
+}
+
+// One event from the Claude stream as the event the browser reads, or null if the browser doesn't need it.
+export function toAppEvent(event) {
+  if (event.type === 'content_block_start' && event.content_block.type === 'text') {
+    return { type: 'block', index: event.index };
+  }
+  if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+    return { type: 'text', index: event.index, text: event.delta.text };
+  }
+  if (event.type === 'content_block_delta' && event.delta.type === 'citations_delta') {
+    const { source, title } = event.delta.citation;
+    return { type: 'citation', index: event.index, url: source, title };
+  }
+  if (event.type === 'message_delta') return { type: 'done', stopReason: event.delta.stop_reason };
+  return null;
+}
+
+// Keeps the token counts up to date as the Claude stream goes by.
+export function updateUsage(usage, event) {
+  if (event.type === 'message_start') Object.assign(usage, event.message.usage);
+  if (event.type === 'message_delta') usage.output_tokens = event.usage?.output_tokens ?? usage.output_tokens;
+}
 
 export async function POST(request) {
   let question, history, resolved;
@@ -126,49 +176,20 @@ export async function POST(request) {
         if (!stopped) controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
       };
 
-      // Every section sent to Claude, so the browser can list cited and not-cited sources.
-      // caution (GA-3) is for the confidence badge in the browser. searchResults() never sends it to Claude.
-      send({
-        type: 'sections',
-        sections: docs.sections.map(({ id, url, pageTitle, guideName, sectionHeading, caution }) => ({
-          id,
-          url,
-          pageTitle,
-          guideName,
-          sectionHeading,
-          caution,
-        })),
-      });
+      send(sectionsEvent());
 
       try {
         console.log('[answer] stream started');
-        claudeStream = client.messages.stream({
-          model: MODEL,
-          max_tokens: 16000,
-          output_config: { effort: 'low' },
-          system: SYSTEM_PROMPT,
-          messages: buildMessages(history, question, resolved),
-        });
+        claudeStream = client.messages.stream(claudeRequest({ question, history, resolved }));
 
         const usage = {};
         for await (const event of claudeStream) {
-          if (event.type === 'message_start') {
-            Object.assign(usage, event.message.usage);
-          } else if (event.type === 'content_block_start' && event.content_block.type === 'text') {
-            send({ type: 'block', index: event.index });
-          } else if (event.type === 'content_block_delta') {
-            if (event.delta.type === 'text_delta') {
-              textSent += event.delta.text.length;
-              send({ type: 'text', index: event.index, text: event.delta.text });
-              if (shouldForceError(textSent)) throw new Error('Forced test error (FORCE_ERROR=1)');
-            } else if (event.delta.type === 'citations_delta') {
-              const { source, title } = event.delta.citation;
-              send({ type: 'citation', index: event.index, url: source, title });
-            }
-          } else if (event.type === 'message_delta') {
-            usage.output_tokens = event.usage?.output_tokens ?? usage.output_tokens;
-            send({ type: 'done', stopReason: event.delta.stop_reason });
-          }
+          updateUsage(usage, event);
+          const appEvent = toAppEvent(event);
+          if (!appEvent) continue;
+          if (appEvent.type === 'text') textSent += appEvent.text.length;
+          send(appEvent);
+          if (shouldForceError(textSent)) throw new Error('Forced test error (FORCE_ERROR=1)');
         }
         if (!stopped) {
           console.log(`[answer] stream finished (${textSent} characters sent)`);

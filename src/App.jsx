@@ -32,7 +32,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Response, { CONFIDENCE, ERROR_MESSAGE, STOPPED_MESSAGE } from './Response.jsx';
 import SourcesIcon, { SourcesFilledIcon } from './SourcesIcon.jsx';
 import SourcesPanel from './SourcesPanel.jsx';
-import { splitSources, streamAnswer, turnConfidence } from './streamAnswer.js';
+import { applyEvent, splitSources, streamAnswer, turnConfidence } from './streamAnswer.js';
 import { chatHistory, decideFollowUp, readTurn, resolvePick, turnText, visibleLists } from './followUp.js';
 import ClarifyResponse from './ClarifyResponse.jsx';
 
@@ -42,19 +42,6 @@ let nextTurnId = 1;
 function withBadgeText(turn, message) {
   const result = turnConfidence(turn);
   return result ? `${CONFIDENCE[result.level].label}. ${message}` : message;
-}
-
-// Adds one stream event to a turn. Returns only the fields that change.
-function applyEvent(turn, event) {
-  if (event.type === 'sections') return { sections: event.sections };
-  if (!['block', 'text', 'citation'].includes(event.type)) return {};
-  const block = turn.blocks[event.index] ?? { text: '', citations: [] };
-  if (event.type === 'block') return { blocks: { ...turn.blocks, [event.index]: { text: '', citations: [] } } };
-  if (event.type === 'text') {
-    return { status: 'streaming', blocks: { ...turn.blocks, [event.index]: { ...block, text: block.text + event.text } } };
-  }
-  const citation = { url: event.url, title: event.title };
-  return { blocks: { ...turn.blocks, [event.index]: { ...block, citations: [...block.citations, citation] } } };
 }
 
 // Approved deviation (Lisa, Nov 2, decision 63): the AWS rail sizes, with literal px where no token gives the size.

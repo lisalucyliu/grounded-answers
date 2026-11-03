@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { allResultsUrl, confidence } from '../src/streamAnswer.js';
+import { allResultsUrl, confidence, noAnswerFound } from '../src/streamAnswer.js';
 import { useFakeAnswer } from './fakeAnswer.js';
 import { ask, lastResponse } from './helpers.js';
 
@@ -64,6 +64,18 @@ test('GA-4: encoding of the link', () => {
   expect(query('How many tags?')).toBe('How+many+tags%3F');
   expect(query('S3 & KMS: 100%')).toBe('S3+%26+KMS%3A+100%25');
   expect(allResultsUrl('a')).toBe('https://docs.aws.amazon.com/search/doc-search.html?searchPath=documentation&searchQuery=a&searchTab=all');
+});
+
+test('GA-4: the rule, by turn status', () => {
+  const turn = (status, text, citations = []) => ({ status, blocks: { 0: { text, citations } } });
+  const cited = [{ url: 'u', title: 't' }];
+  expect(noAnswerFound(turn('complete', 'Text.'))).toBe(true);
+  expect(noAnswerFound(turn('complete', 'Text.', cited))).toBe(false);
+  expect(noAnswerFound(turn('complete', '[NO_ANSWER]\nText.', cited))).toBe(true);
+  expect(noAnswerFound(turn('stopped', 'Text.'))).toBe(false);
+  expect(noAnswerFound(turn('stopped', '[NO_ANSWER]\nText.'))).toBe(true);
+  expect(noAnswerFound(turn('error', '[NO_ANSWER]\nText.'))).toBe(false);
+  expect(noAnswerFound(turn('streaming', '[NO_ANSWER]\nText.'))).toBe(false);
 });
 
 test('GA-4: not on a stopped response with 0 cited, and not on a response that cites', async ({ page }) => {

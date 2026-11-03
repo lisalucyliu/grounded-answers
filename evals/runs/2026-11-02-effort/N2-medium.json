@@ -1,0 +1,20 @@
+{
+  "id": "N2",
+  "question": "How long does a Data Exchange export job take for a 50 GB revision?",
+  "effort": "medium",
+  "visibleText": "The documentation provided doesn't say how long an AWS Data Exchange export job takes for a 50 GB revision, or for any other size. The pages on exporting revisions and assets describe how to set up exports, such as choosing S3 destinations, key patterns, and encryption options. They give no throughput or duration figures.\n\nThe closest thing is that after you add an auto-export destination, a job starts and its State field in the Jobs section changes to Completed when it finishes. That is the only way the docs describe to track completion, and it won't give you an estimate up front. For a real number, I'd run a test export with a representative revision and time it, or check the Data Exchange quotas and service documentation, which weren't part of these results.",
+  "marker": true,
+  "ga4": true,
+  "badge": "none",
+  "citedSources": [],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 28,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 236
+  },
+  "timeToFirstTextMs": 1162,
+  "totalMs": 3025,
+  "costUsd": 0.005425
+}

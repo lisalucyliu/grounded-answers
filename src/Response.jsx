@@ -10,8 +10,8 @@ import StatusIndicator from '@cloudscape-design/components/status-indicator';
 import TextContent from '@cloudscape-design/components/text-content';
 import { spaceScaledXl } from '@cloudscape-design/design-tokens';
 import { useEffect, useRef, useState } from 'react';
-import { LIST_ITEM, readTurn, startsNewList, turnText } from './followUp.js';
-import { allResultsUrl, collectSources, splitSources, turnConfidence } from './streamAnswer.js';
+import { readTurn, turnText } from './followUp.js';
+import { allResultsUrl, buildSegments, collectSources, noAnswerFound, splitSources, turnConfidence } from './streamAnswer.js';
 
 export const STOPPED_MESSAGE = 'Stopped. This response is not complete.';
 export const ERROR_MESSAGE = "Something went wrong and the response didn't finish. Your question is saved.";
@@ -103,92 +103,23 @@ function OverviewHeading({ result }) {
   );
 }
 
-// Removes the first `length` characters of a line's text ("3. ") from its leading text pieces.
-function stripPrefix(pieces, length) {
-  const result = [];
-  let remaining = length;
-  for (const piece of pieces) {
-    if (remaining > 0 && typeof piece === 'string') {
-      const cut = Math.min(remaining, piece.length);
-      remaining -= cut;
-      if (piece.length > cut) result.push(piece.slice(cut));
-    } else {
-      result.push(piece);
-    }
-  }
-  return result;
-}
-
-// Turns the streamed text blocks into paragraphs and numbered lists, and puts a [n] marker
-// after the text that each citation supports. `opening` is the code-written start of a GA-5 answer.
-function buildContent(blocks, markersByBlock, sources, sectionsByUrl, opening) {
-  const lines = [{ pieces: opening ? [opening] : [] }];
-  blocks.forEach((block, blockIndex) => {
-    // The line that holds this block's last text. A block can end in a line break,
-    // and its markers belong with its text, not at the start of the next line.
-    let lastWithText = lines.at(-1);
-    block.text.split('\n').forEach((part, partIndex) => {
-      if (partIndex > 0) lines.push({ pieces: [] });
-      if (part.trim()) {
-        const line = lines.at(-1);
-        // A word right after a [n] marker needs a space ("writes. [2] Next", not "[2]Next").
-        // Punctuation doesn't ("[1].", not "[1] .").
-        line.pieces.push(typeof line.pieces.at(-1) === 'object' && /^[\p{L}\p{N}(]/u.test(part) ? ` ${part}` : part);
-        lastWithText = line;
-      }
-    });
-    for (const number of markersByBlock[blockIndex]) {
-      const source = sources[number - 1];
-      lastWithText.pieces.push(
-        <span key={`marker-${blockIndex}-${number}`}>
-          {' '}
-          <CitationMarker
-            number={number}
-            url={source.url}
-            section={sectionsByUrl.get(source.url)}
-            fallbackTitle={source.title}
-          />
-        </span>
-      );
-    }
+// A piece of a line is text or a [n] marker. buildSegments in streamAnswer.js decides where each one goes.
+function renderPieces(pieces, sources, sectionsByUrl) {
+  return pieces.map((piece) => {
+    if (typeof piece === 'string') return piece;
+    const source = sources[piece.number - 1];
+    return (
+      <span key={`marker-${piece.blockIndex}-${piece.number}`}>
+        {' '}
+        <CitationMarker
+          number={piece.number}
+          url={source.url}
+          section={sectionsByUrl.get(source.url)}
+          fallbackTitle={source.title}
+        />
+      </span>
+    );
   });
-
-  // Numbered lines become an ordered list, using the same rule as the parser in followUp.js.
-  // Lines "- ..." become a bulleted list, so raw dashes never show. Positions only resolve from numbered lists.
-  // Other lines are prose. A blank line ends a paragraph.
-  const segments = [];
-  let paragraph = null;
-  let list = null;
-  for (const { pieces } of lines) {
-    if (!pieces.some((piece) => typeof piece !== 'string' || piece.trim())) {
-      paragraph = null;
-      continue;
-    }
-    const text = pieces.filter((piece) => typeof piece === 'string').join('');
-    const item = text.match(LIST_ITEM);
-    const bullet = text.match(/^\s*[-•]\s+/);
-    if (bullet) {
-      if (!list || list.type !== 'ul') {
-        list = { type: 'ul', items: [] };
-        segments.push(list);
-      }
-      list.items.push(stripPrefix(pieces, bullet[0].length));
-      paragraph = null;
-    } else if (item) {
-      if (startsNewList(Number(item[1]), list?.type === 'ol' ? list : null)) {
-        list = { type: 'ol', items: [] };
-        segments.push(list);
-      }
-      list.items.push(stripPrefix(pieces, item[0].length));
-      paragraph = null;
-    } else {
-      list = null;
-      if (paragraph) paragraph.pieces.push(' ');
-      else segments.push((paragraph = { type: 'p', pieces: [] }));
-      paragraph.pieces.push(...pieces);
-    }
-  }
-  return segments;
 }
 
 export default function Response({ turn, canRegenerate, hideTryAgain, onRegenerate, onTryAgain, onViewAllSources }) {
@@ -200,11 +131,12 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
   useEffect(() => {
     if (turn.status === 'error') errorRef.current?.scrollIntoView({ block: 'nearest' });
   }, [turn.status]);
-  const { blocks, noAnswer } = readTurn(turn); // Without the GA-4 marker.
+  const { blocks } = readTurn(turn); // Without the GA-4 marker.
   const sections = turn.sections ?? [];
   const sectionsByUrl = new Map(sections.map((section) => [section.url, section]));
   const { sources, markersByBlock } = collectSources(blocks);
-  const segments = buildContent(blocks, markersByBlock, sources, sectionsByUrl, turn.resolved?.opening);
+  const segments = buildSegments(blocks, markersByBlock, turn.resolved?.opening);
+  const render = (pieces) => renderPieces(pieces, sources, sectionsByUrl);
   const plainText = turnText(turn); // Includes the code-written opening of a GA-5 answer.
   const isGenerating = turn.status === 'loading' || turn.status === 'streaming';
   const showActions = turn.status === 'stopped' || turn.status === 'complete';
@@ -212,8 +144,7 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
   const showOverview = turn.status === 'complete' || segments.length > 0;
   // GA-3: only on a complete or stopped response, using the sections cited so far.
   const confidenceResult = showActions ? turnConfidence(turn) : null;
-  // GA-4: the marker, or a complete response that cites nothing. An error response keeps only its error Alert.
-  const noAnswerFound = (noAnswer && showActions) || (turn.status === 'complete' && sources.length === 0);
+  const showNoAnswer = noAnswerFound(turn);
 
   return (
     <div data-testid="response">
@@ -225,7 +156,7 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
             {segments.map((segment, index) =>
               segment.type === 'p' ? (
                 <Box variant="p" key={index}>
-                  {segment.pieces}
+                  {render(segment.pieces)}
                 </Box>
               ) : (
                 // Cloudscape Text content styles lists (Box can't).
@@ -233,13 +164,13 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
                   {segment.type === 'ol' ? (
                     <ol>
                       {segment.items.map((pieces, itemIndex) => (
-                        <li key={itemIndex}>{pieces}</li>
+                        <li key={itemIndex}>{render(pieces)}</li>
                       ))}
                     </ol>
                   ) : (
                     <ul>
                       {segment.items.map((pieces, itemIndex) => (
-                        <li key={itemIndex}>{pieces}</li>
+                        <li key={itemIndex}>{render(pieces)}</li>
                       ))}
                     </ul>
                   )}
@@ -338,7 +269,7 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
           />
         )}
 
-        {noAnswerFound && (
+        {showNoAnswer && (
           <Alert type="info" i18nStrings={{ infoIconAriaLabel: 'Info' }}>
             Looking for something else?{' '}
             <Link href={allResultsUrl(turn.question)} external externalIconAriaLabel="Opens in a new tab" variant="primary">

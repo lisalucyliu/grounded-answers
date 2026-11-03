@@ -4,6 +4,24 @@ import { expect } from '@playwright/test';
 export const QUESTION = 'What server-side encryption options can I use for S3 objects?';
 export const STOPPED_MESSAGE = 'Stopped. This response is not complete.';
 
+// api/answer.js makes its Claude client when it loads, and that client keeps the fetch it finds.
+// So load it through here: a fake key and a fetch that throws, so a test can never reach Claude.
+export async function importWithoutNetwork(load) {
+  const realFetch = globalThis.fetch;
+  const realKey = process.env.ANTHROPIC_API_KEY;
+  process.env.ANTHROPIC_API_KEY = 'test-key-not-real';
+  globalThis.fetch = async () => {
+    throw new Error('No network in this test');
+  };
+  try {
+    return await load();
+  } finally {
+    globalThis.fetch = realFetch;
+    if (realKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = realKey;
+  }
+}
+
 // Path to the `vercel dev` output, so tests can check the server log.
 export function serverLog() {
   const path = process.env.SERVER_LOG;
