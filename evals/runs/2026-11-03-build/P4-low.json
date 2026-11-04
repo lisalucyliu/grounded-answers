@@ -1,0 +1,27 @@
+{
+  "id": "P4",
+  "question": "If I suspend versioning, what happens to the versions already in my bucket?",
+  "effort": "low",
+  "visibleText": "Nothing happens to them. When you suspend versioning, existing objects in your bucket do not change. What changes is how Amazon S3 handles objects in future requests. So the versions you already have stay in the bucket, and you keep paying for them, since each version of an object is the entire object, not just a diff, so three stored versions are charged as three objects.\n\nSuspending only stops new versions from accruing. You might do this because you only want a single version of an object in a bucket, or because you don't want to accrue charges for multiple versions. If you want the old versions gone, suspending won't do it. You'd need to delete them explicitly or use a lifecycle rule. The documentation provided shows an example lifecycle configuration that expires noncurrent object versions after 7 days.\n\nAlso note that after you version-enable a bucket, it can never return to an unversioned state, but you can suspend versioning on that bucket. If you use replication, keep in mind that both source and destination buckets must have versioning enabled, so suspending would break that requirement.",
+  "visibleTextWithMarkers": "Nothing happens to them. When you suspend versioning, existing objects in your bucket do not change. What changes is how Amazon S3 handles objects in future requests. [1] So the versions you already have stay in the bucket, and you keep paying for them, since each version of an object is the entire object, not just a diff, so three stored versions are charged as three objects. [2]\n\nSuspending only stops new versions from accruing. You might do this because you only want a single version of an object in a bucket, or because you don't want to accrue charges for multiple versions. [3] If you want the old versions gone, suspending won't do it. You'd need to delete them explicitly or use a lifecycle rule. The documentation provided shows an example lifecycle configuration that expires noncurrent object versions after 7 days [4].\n\nAlso note that after you version-enable a bucket, it can never return to an unversioned state, but you can suspend versioning on that bucket. [1] If you use replication, keep in mind that both source and destination buckets must have versioning enabled [5], so suspending would break that requirement.",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Retaining multiple versions of objects with S3 Versioning · Amazon Simple Storage Service User Guide › Unversioned, versioning-enabled, and versioning-suspended buckets",
+    "Retaining multiple versions of objects with S3 Versioning · Amazon Simple Storage Service User Guide",
+    "Working with objects in a versioning-suspended bucket · Amazon Simple Storage Service User Guide",
+    "Enabling versioning on buckets · Amazon Simple Storage Service User Guide",
+    "Requirements and considerations for replication · Amazon Simple Storage Service User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 28,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 438
+  },
+  "timeToFirstTextMs": 572,
+  "totalMs": 3440,
+  "costUsd": 0.007445
+}

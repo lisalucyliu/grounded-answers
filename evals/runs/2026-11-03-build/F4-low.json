@@ -1,0 +1,26 @@
+{
+  "id": "F4",
+  "question": "What do I need to set up before S3 replication works?",
+  "effort": "low",
+  "visibleText": "Before replication works, you need to meet these requirements:\n\n1. Regions enabled: the source bucket owner must have the source and destination AWS Regions enabled for their account, and the destination bucket owner must have the destination Region enabled for theirs.\n\n2. Versioning: both source and destination buckets must have versioning enabled. Versioning is off by default, so you have to turn it on. After enabling it for the first time, it can take up to 15 minutes to propagate, and the docs recommend waiting that long before doing writes.\n\n3. Permissions: Amazon S3 must have permissions to replicate objects from the source bucket to the destination bucket or buckets on your behalf. In practice that is an IAM role you specify in the replication configuration.\n\n4. Object ownership: if the source bucket owner doesn't own an object, the object owner must grant the bucket owner READ and READ_ACP permissions through the object ACL.\n\n5. Object Lock: if the source bucket has S3 Object Lock enabled, the destination buckets must have it enabled too. The replication role also needs s3:GetObjectRetention and s3:GetObjectLegalHold on the source bucket (s3:Get* satisfies this).\n\n6. Cross-account access: if the buckets are in different accounts, the destination bucket owner must grant the source bucket owner permission to replicate objects through a bucket policy.\n\n7. Requester Pays: destination buckets cannot be configured as Requester Pays buckets.\n\nIf you use KMS-encrypted objects, there is extra setup. By default, S3 doesn't replicate objects encrypted with SSE-KMS or DSSE-KMS. You need to add the destination KMS key ID and explicitly opt in with the SourceSelectionCriteria element. The IAM role also needs additional permissions.\n\nAlso note that replication only handles new objects. To replicate objects that existed before the replication configuration, use S3 Batch Replication.",
+  "visibleTextWithMarkers": "Before replication works, you need to meet these requirements:\n\n1. Regions enabled: the source bucket owner must have the source and destination AWS Regions enabled for their account, and the destination bucket owner must have the destination Region enabled for theirs. [1]\n2. Versioning: both source and destination buckets must have versioning enabled. [1] Versioning is off by default, so you have to turn it on. After enabling it for the first time, it can take up to 15 minutes to propagate, and the docs recommend waiting that long before doing writes. [2]\n3. Permissions: Amazon S3 must have permissions to replicate objects from the source bucket to the destination bucket or buckets on your behalf. [1] In practice that is an IAM role you specify in the replication configuration.\n4. Object ownership: if the source bucket owner doesn't own an object, the object owner must grant the bucket owner READ and READ_ACP permissions through the object ACL. [1]\n5. Object Lock: if the source bucket has S3 Object Lock enabled, the destination buckets must have it enabled too. [1] The replication role also needs s3:GetObjectRetention and s3:GetObjectLegalHold on the source bucket (s3:Get* satisfies this). [1]\n6. Cross-account access: if the buckets are in different accounts, the destination bucket owner must grant the source bucket owner permission to replicate objects through a bucket policy. [1]\n7. Requester Pays: destination buckets cannot be configured as Requester Pays buckets. [1]\n\nIf you use KMS-encrypted objects, there is extra setup. By default, S3 doesn't replicate objects encrypted with SSE-KMS or DSSE-KMS. [3] You need to add the destination KMS key ID and explicitly opt in with the SourceSelectionCriteria element. [3] The IAM role also needs additional permissions. [3]\n\nAlso note that replication only handles new objects. To replicate objects that existed before the replication configuration, use S3 Batch Replication. [4]",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Requirements and considerations for replication · Amazon Simple Storage Service User Guide",
+    "Enabling versioning on buckets · Amazon Simple Storage Service User Guide",
+    "Replicating encrypted objects (SSE-S3, SSE-KMS, DSSE-KMS, SSE-C) · Amazon Simple Storage Service User Guide › Replicating objects encrypted with SSE-S3, SSE-KMS, or DSSE-KMS",
+    "Replicating existing objects with Batch Replication · Amazon Simple Storage Service User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 20,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 880
+  },
+  "timeToFirstTextMs": 1487,
+  "totalMs": 6154,
+  "costUsd": 0.011849
+}

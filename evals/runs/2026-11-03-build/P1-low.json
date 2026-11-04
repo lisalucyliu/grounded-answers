@@ -1,0 +1,27 @@
+{
+  "id": "P1",
+  "question": "How do I replicate objects that already exist in my bucket to a bucket in another Region?",
+  "effort": "low",
+  "visibleText": "Use S3 Batch Replication. Live replication only handles new objects, while S3 Batch Replication occurs on demand on existing objects. It covers objects that existed before a replication configuration was in place, objects that have previously been replicated, and objects that have failed replication.\n\nPrerequisites first. Both source and destination buckets must have versioning enabled. You also need a replication configuration in place, and Amazon S3 must have permissions to replicate objects from the source bucket to the destination bucket on your behalf. If the buckets are in different accounts, the owner of the destination buckets must grant the owner of the source bucket permissions to replicate objects with a bucket policy.\n\nThere are two ways to start the job:\n\n1. New rule or destination: you can create a one-time Batch Replication job when you're creating the first rule in a new replication configuration or when you're adding a new destination bucket to an existing configuration through the Amazon S3 console.\n2. Existing configuration: you can create a new Batch Replication job by using S3 Batch Operations through the Amazon S3 console, the AWS CLI, the AWS SDKs, or the Amazon S3 REST API.\n\nWhen the job finishes, you get a completion report. You can request a CSV completion report that shows the objects, replication success or failure codes, outputs, and descriptions.\n\nWatch out for encryption. By default, Amazon S3 doesn't replicate objects that are encrypted with SSE-KMS or DSSE-KMS, so you have to opt in through the replication configuration. Also, if you use Batch Replication cross-region and your objects previously had their encryption type updated from SSE-S3 to SSE-KMS, you may need additional permissions: kms:decrypt on the source region bucket, and kms:decrypt and kms:encrypt for the bucket in the destination region. SSE-C objects need no extra permissions, since to replicate existing objects in your buckets, use S3 Batch Replication.",
+  "visibleTextWithMarkers": "Use S3 Batch Replication. Live replication only handles new objects, while S3 Batch Replication occurs on demand on existing objects [1]. It covers objects that existed before a replication configuration was in place, objects that have previously been replicated, and objects that have failed replication [1].\n\nPrerequisites first. Both source and destination buckets must have versioning enabled. [2] You also need a replication configuration in place, and Amazon S3 must have permissions to replicate objects from the source bucket to the destination bucket on your behalf [2]. If the buckets are in different accounts, the owner of the destination buckets must grant the owner of the source bucket permissions to replicate objects with a bucket policy [2].\n\nThere are two ways to start the job:\n\n1. New rule or destination: you can create a one-time Batch Replication job when you're creating the first rule in a new replication configuration or when you're adding a new destination bucket to an existing configuration through the Amazon S3 console [1].\n2. Existing configuration: you can create a new Batch Replication job by using S3 Batch Operations through the Amazon S3 console, the AWS CLI, the AWS SDKs, or the Amazon S3 REST API [1].\n\nWhen the job finishes, you get a completion report. You can request a CSV completion report that shows the objects, replication success or failure codes, outputs, and descriptions [3].\n\nWatch out for encryption. By default, Amazon S3 doesn't replicate objects that are encrypted with SSE-KMS or DSSE-KMS [4], so you have to opt in through the replication configuration. Also, if you use Batch Replication cross-region and your objects previously had their encryption type updated from SSE-S3 to SSE-KMS, you may need additional permissions: kms:decrypt on the source region bucket, and kms:decrypt and kms:encrypt for the bucket in the destination region [4]. SSE-C objects need no extra permissions, since to replicate existing objects in your buckets, use S3 Batch Replication [5].",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Replicating existing objects with Batch Replication · Amazon Simple Storage Service User Guide",
+    "Requirements and considerations for replication · Amazon Simple Storage Service User Guide",
+    "Replicating existing objects with Batch Replication · Amazon Simple Storage Service User Guide › Batch Replication completion report",
+    "Replicating encrypted objects (SSE-S3, SSE-KMS, DSSE-KMS, SSE-C) · Amazon Simple Storage Service User Guide › Replicating objects encrypted with SSE-S3, SSE-KMS, or DSSE-KMS",
+    "Replicating encrypted objects (SSE-S3, SSE-KMS, DSSE-KMS, SSE-C) · Amazon Simple Storage Service User Guide › Replicating objects encrypted with SSE-C"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 32,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 847
+  },
+  "timeToFirstTextMs": 1192,
+  "totalMs": 5507,
+  "costUsd": 0.011543
+}

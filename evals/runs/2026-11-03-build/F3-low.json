@@ -1,0 +1,25 @@
+{
+  "id": "F3",
+  "question": "Am I charged for every version of an object in a versioned bucket?",
+  "effort": "low",
+  "visibleText": "Yes. Normal Amazon S3 rates apply for every version of an object stored and transferred. Each version of an object is the entire object; it is not just a diff from the previous version. So if you have three versions of an object stored, you are charged for three objects.\n\nTo keep costs down, you can suspend versioning, which stops accruing new versions of the same object in a bucket. Suspending doesn't remove versions that already exist, though, because existing objects in your bucket do not change. A better approach for most buckets is a lifecycle rule that expires noncurrent versions. The documentation calls this a best practice, since it helps prevent objects in the bucket from accumulating a large number of noncurrent versions, which can slow down request performance. Its example expires noncurrent versions after 7 days.",
+  "visibleTextWithMarkers": "Yes. Normal Amazon S3 rates apply for every version of an object stored and transferred. Each version of an object is the entire object; it is not just a diff from the previous version. So if you have three versions of an object stored, you are charged for three objects. [1]\n\nTo keep costs down, you can suspend versioning, which stops accruing new versions of the same object in a bucket [2]. Suspending doesn't remove versions that already exist, though, because existing objects in your bucket do not change [2]. A better approach for most buckets is a lifecycle rule that expires noncurrent versions. The documentation calls this a best practice, since it helps prevent objects in the bucket from accumulating a large number of noncurrent versions, which can slow down request performance [3]. Its example expires noncurrent versions after 7 days.",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Retaining multiple versions of objects with S3 Versioning · Amazon Simple Storage Service User Guide",
+    "Working with objects in a versioning-suspended bucket · Amazon Simple Storage Service User Guide",
+    "Enabling versioning on buckets · Amazon Simple Storage Service User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 25,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 324
+  },
+  "timeToFirstTextMs": 1158,
+  "totalMs": 3102,
+  "costUsd": 0.006299
+}

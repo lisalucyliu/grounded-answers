@@ -1,0 +1,25 @@
+{
+  "id": "N5",
+  "question": "Do I need DSSE-KMS to be HIPAA compliant?",
+  "effort": "low",
+  "visibleText": "The documentation provided doesn't say whether DSSE-KMS is required for HIPAA compliance, so I can't give you a definitive answer from it.\n\nWhat it does say is that DSSE-KMS applies two layers of encryption to objects when they are uploaded to Amazon S3, and it helps you more easily fulfill compliance standards that require multilayer encryption and full control of your encryption keys. It doesn't name HIPAA among those standards. So DSSE-KMS is relevant only if your specific compliance requirement mandates multilayer encryption.\n\nFor context, all new object uploads to Amazon S3 buckets are encrypted by default with SSE-S3. If you want more control, the security controls in AWS KMS can help you meet encryption-related compliance requirements with standard SSE-KMS. Note that DSSE-KMS has tradeoffs: S3 Bucket Keys aren't supported for DSSE-KMS, and it incurs higher charges due to increased computational overhead and additional AWS KMS operations.\n\nTo settle the HIPAA question, check the AWS HIPAA compliance documentation and your Business Associate Addendum in AWS Artifact, or ask your compliance team. Neither is covered in the results I have.",
+  "visibleTextWithMarkers": "The documentation provided doesn't say whether DSSE-KMS is required for HIPAA compliance, so I can't give you a definitive answer from it.\n\nWhat it does say is that DSSE-KMS applies two layers of encryption to objects when they are uploaded to Amazon S3, and it helps you more easily fulfill compliance standards that require multilayer encryption and full control of your encryption keys. [1] It doesn't name HIPAA among those standards. So DSSE-KMS is relevant only if your specific compliance requirement mandates multilayer encryption.\n\nFor context, all new object uploads to Amazon S3 buckets are encrypted by default with SSE-S3. [2] If you want more control, the security controls in AWS KMS can help you meet encryption-related compliance requirements [3] with standard SSE-KMS. Note that DSSE-KMS has tradeoffs: S3 Bucket Keys aren't supported for DSSE-KMS [1], and it incurs higher charges due to increased computational overhead and additional AWS KMS operations. [1]\n\nTo settle the HIPAA question, check the AWS HIPAA compliance documentation and your Business Associate Addendum in AWS Artifact, or ask your compliance team. Neither is covered in the results I have.",
+  "marker": true,
+  "ga4": true,
+  "badge": "none",
+  "citedSources": [
+    "Using dual-layer server-side encryption with AWS KMS keys (DSSE-KMS) · Amazon Simple Storage Service User Guide",
+    "Using server-side encryption with Amazon S3 managed keys (SSE-S3) · Amazon Simple Storage Service User Guide",
+    "Using server-side encryption with AWS KMS keys (SSE-KMS) · Amazon Simple Storage Service User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 28,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 509
+  },
+  "timeToFirstTextMs": 1329,
+  "totalMs": 3994,
+  "costUsd": 0.008155
+}

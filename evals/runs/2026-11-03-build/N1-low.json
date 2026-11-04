@@ -1,0 +1,23 @@
+{
+  "id": "N1",
+  "question": "What does S3 Standard storage cost per GB in us-east-1?",
+  "effort": "low",
+  "visibleText": "The documentation provided doesn't state S3 Standard pricing for us-east-1. The closest thing is a cost example in the Live Streaming on AWS implementation guide, which says Amazon S3 charges $0.023 per Gigabyte (GB) per month for the first 50 Terabytes (TB) stored in the bucket. That example doesn't name a Region or a storage class, so I can't confirm it applies to S3 Standard in us-east-1, and prices can change. For an authoritative number, check the Amazon S3 pricing page or the AWS Pricing Calculator.",
+  "visibleTextWithMarkers": "The documentation provided doesn't state S3 Standard pricing for us-east-1. The closest thing is a cost example in the Live Streaming on AWS implementation guide, which says Amazon S3 charges $0.023 per Gigabyte (GB) per month for the first 50 Terabytes (TB) stored in the bucket [1]. That example doesn't name a Region or a storage class, so I can't confirm it applies to S3 Standard in us-east-1, and prices can change. For an authoritative number, check the Amazon S3 pricing page or the AWS Pricing Calculator.",
+  "marker": true,
+  "ga4": true,
+  "badge": "Low",
+  "citedSources": [
+    "Cost example 1 · Live Streaming on AWS with Amazon S3 Implementation Guide › Amazon S3 pricing"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 27,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 409
+  },
+  "timeToFirstTextMs": 3294,
+  "totalMs": 4523,
+  "costUsd": 0.007153
+}

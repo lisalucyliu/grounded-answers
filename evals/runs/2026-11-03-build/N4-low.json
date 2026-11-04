@@ -1,0 +1,21 @@
+{
+  "id": "N4",
+  "question": "How many tags can I add to a Data Exchange data set?",
+  "effort": "low",
+  "visibleText": "The documentation provided doesn't say how many tags you can add to a Data Exchange data set. The only tagging material in the results is the request syntax for the Data Exchange TagResource API, which shows a \"tags\" map of string keys to string values, but it gives no limit on how many tags a resource can have. The S3 TagResource syntax is also there, but it covers S3 and doesn't answer the question either. For the limit, check the AWS Data Exchange quotas page or the AWS tagging documentation.",
+  "visibleTextWithMarkers": "The documentation provided doesn't say how many tags you can add to a Data Exchange data set. The only tagging material in the results is the request syntax for the Data Exchange TagResource API, which shows a \"tags\" map of string keys to string values, but it gives no limit on how many tags a resource can have. The S3 TagResource syntax is also there, but it covers S3 and doesn't answer the question either. For the limit, check the AWS Data Exchange quotas page or the AWS tagging documentation.",
+  "marker": true,
+  "ga4": true,
+  "badge": "none",
+  "citedSources": [],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 23,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 171
+  },
+  "timeToFirstTextMs": 1870,
+  "totalMs": 3120,
+  "costUsd": 0.004765
+}

@@ -1,0 +1,29 @@
+{
+  "id": "P5",
+  "question": "I accepted a data grant. How do I get its files into my S3 bucket?",
+  "effort": "low",
+  "visibleText": "Once the grant shows as Accepted, you export the files from the data set into your bucket. Choose the data grant name from the Entitled data sets table to access the data. For file-based data sets, you can export the associated files to Amazon S3 or locally through a signed URL.\n\nFor a one-off export, you can set up your Amazon S3 bucket to receive the assets, then export them to Amazon S3 or use jobs with a signed URL. Both providers and subscribers can export data sets from a published revision of a product. When you set up the export, you choose a key pattern for the object names. You must include at least one of the two Asset dynamic references, ${Asset.Name} or ${Asset.Id}. Be careful about naming collisions: if the resulting names match existing objects in the bucket, the export overwrites them, and if the revision has non-unique names the export fails. ${Asset.Id} is the only dynamic reference that is guaranteed unique. You can also pick encryption: SSE-S3 or SSE-KMS for the exported objects.\n\nIf you want new revisions to land in your bucket automatically, use auto-export. The steps in the console are:\n\n1. Open the data set: sign in to the AWS Data Exchange console, choose Entitled data under My subscriptions, then pick the product and the data set\n2. Add a destination: on the Revisions tab, under Auto-export job destinations, choose Actions and then Add auto-export job destination\n3. Choose the mode: Simple lets you pick the bucket folder and encryption options; Advanced also lets you select a key naming pattern and append it to the path\n4. Confirm: set the encryption options, review the Amazon S3 pricing, and choose Add bucket destination\n\nThe one prerequisite is bucket permissions: your bucket must have a bucket policy that allows AWS Data Exchange to export data into it. To verify this, AWS Data Exchange adds a test object named _ADX-TEST-ACCOUNTID# to the bucket. Also, you can auto-export new revisions to up to five S3 buckets.\n\nOne caveat: if the provider marked the product as containing HIPAA-regulated PHI, you can't export it unless your AWS account is designated as a HIPAA account.",
+  "visibleTextWithMarkers": "Once the grant shows as Accepted, you export the files from the data set into your bucket. Choose the data grant name from the Entitled data sets table to access the data. [1] For file-based data sets, you can export the associated files to Amazon S3 or locally through a signed URL. [1]\n\nFor a one-off export, you can set up your Amazon S3 bucket to receive the assets, then export them to Amazon S3 or use jobs with a signed URL. [2] Both providers and subscribers can export data sets from a published revision of a product [3]. When you set up the export, you choose a key pattern for the object names. You must include at least one of the two Asset dynamic references, ${Asset.Name} or ${Asset.Id}. [4] Be careful about naming collisions: if the resulting names match existing objects in the bucket, the export overwrites them, and if the revision has non-unique names the export fails. ${Asset.Id} is the only dynamic reference that is guaranteed unique. [4] You can also pick encryption: SSE-S3 or SSE-KMS for the exported objects. [5]\n\nIf you want new revisions to land in your bucket automatically, use auto-export. The steps in the console are:\n\n1. Open the data set: sign in to the AWS Data Exchange console, choose Entitled data under My subscriptions, then pick the product and the data set [6]\n2. Add a destination: on the Revisions tab, under Auto-export job destinations, choose Actions and then Add auto-export job destination [6]\n3. Choose the mode: Simple lets you pick the bucket folder and encryption options; Advanced also lets you select a key naming pattern and append it to the path [6]\n4. Confirm: set the encryption options, review the Amazon S3 pricing, and choose Add bucket destination [6]\n\nThe one prerequisite is bucket permissions: your bucket must have a bucket policy that allows AWS Data Exchange to export data into it. [7] To verify this, AWS Data Exchange adds a test object named _ADX-TEST-ACCOUNTID# to the bucket. [6] Also, you can auto-export new revisions to up to five S3 buckets. [7]\n\nOne caveat: if the provider marked the product as containing HIPAA-regulated PHI, you can't export it unless your AWS account is designated as a HIPAA account. [5]",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Accepting data grants and accessing data on AWS Data Exchange · AWS Data Exchange User Guide",
+    "Access an AWS Data Exchange data set containing file-based data · AWS Data Exchange User Guide › (Optional) Exporting data",
+    "Exporting assets from AWS Data Exchange · AWS Data Exchange User Guide",
+    "Key patterns when exporting asset revisions from AWS Data Exchange · AWS Data Exchange User Guide",
+    "Exporting revisions from AWS Data Exchange · AWS Data Exchange User Guide",
+    "Automatically exporting AWS Data Exchange asset revisions to an S3 bucket as a subscriber · AWS Data Exchange User Guide › Automatically exporting revisions to an S3 bucket as a subscriber (console)",
+    "Automatically exporting AWS Data Exchange asset revisions to an S3 bucket as a subscriber · AWS Data Exchange User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 29,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 1016
+  },
+  "timeToFirstTextMs": 582,
+  "totalMs": 6303,
+  "costUsd": 0.013227
+}

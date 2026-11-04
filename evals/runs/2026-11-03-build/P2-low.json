@@ -1,0 +1,24 @@
+{
+  "id": "P2",
+  "question": "How do I add tags with TagResource?",
+  "effort": "low",
+  "visibleText": "The documentation provided only shows the request syntax for TagResource, and it exists in two services, so which one you need depends on what you're tagging. It doesn't include a full walkthrough or CLI examples.\n\n1. AWS Data Exchange: send a POST to /tags/ResourceArn with Content-type application/json and a body of the form { \"tags\": { \"string\" : \"string\" } }, where the ResourceArn goes in the path and each tag is a key/value pair in the tags map.\n\n2. Amazon S3 Control: send a POST to /v20180820/tags/resourceArn+ on host s3-control.amazonaws.com with the x-amz-account-id header set to your account ID. The body is an XML TagResourceRequest containing a Tags element, with one Tag element per tag, each holding a Key and a Value.\n\nIn both cases the resource ARN identifies what you're tagging and the key/value pairs are the tags to add. The results don't cover the required permissions, limits on the number of tags, or SDK and CLI commands, so check the full API reference for those.",
+  "visibleTextWithMarkers": "The documentation provided only shows the request syntax for TagResource, and it exists in two services, so which one you need depends on what you're tagging. It doesn't include a full walkthrough or CLI examples.\n\n1. AWS Data Exchange: send a POST to /tags/ResourceArn with Content-type application/json and a body of the form { \"tags\": { \"string\" : \"string\" } } [1], where the ResourceArn goes in the path and each tag is a key/value pair in the tags map.\n2. Amazon S3 Control: send a POST to /v20180820/tags/resourceArn+ on host s3-control.amazonaws.com with the x-amz-account-id header set to your account ID. The body is an XML TagResourceRequest containing a Tags element, with one Tag element per tag, each holding a Key and a Value [2].\n\nIn both cases the resource ARN identifies what you're tagging and the key/value pairs are the tags to add. The results don't cover the required permissions, limits on the number of tags, or SDK and CLI commands, so check the full API reference for those.",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "TagResource · AWS Data Exchange API Reference › Request Syntax",
+    "TagResource · Amazon S3 API Reference › Request Syntax"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 17,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 564
+  },
+  "timeToFirstTextMs": 3410,
+  "totalMs": 5779,
+  "costUsd": 0.008683
+}

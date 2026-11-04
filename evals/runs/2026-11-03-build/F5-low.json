@@ -1,0 +1,25 @@
+{
+  "id": "F5",
+  "question": "When I export a Data Exchange revision to S3, which encryption can I apply to the exported files?",
+  "effort": "low",
+  "visibleText": "When you export a revision from AWS Data Exchange to S3, you set the server-side encryption configuration in the export job details. You can choose server-side encryption with Amazon S3-Managed Keys (SSE-S3) or server-side encryption with KMS keys stored in AWS Key Management Service (SSE-KMS).\n\n1. SSE-S3: server-side encryption with Amazon S3 managed keys\n2. SSE-KMS: server-side encryption with AWS KMS keys\n\nThe Data Exchange documentation lists only these two options for exports. It doesn't mention DSSE-KMS or SSE-C as choices in the export job. If you're setting up an auto-export as a subscriber, you pick the encryption options in the console when you add the bucket destination.\n\nAlso note that all S3 buckets have SSE-S3 as the default encryption configuration, so exported objects are encrypted at rest even if you don't pick anything special. If you do use SSE-KMS, the KMS key must be in the same Region as the bucket, and there are additional charges for using AWS KMS keys.",
+  "visibleTextWithMarkers": "When you export a revision from AWS Data Exchange to S3, you set the server-side encryption configuration in the export job details. You can choose server-side encryption with Amazon S3-Managed Keys (SSE-S3) or server-side encryption with KMS keys stored in AWS Key Management Service (SSE-KMS). [1]\n\n1. SSE-S3: server-side encryption with Amazon S3 managed keys\n2. SSE-KMS: server-side encryption with AWS KMS keys\n\nThe Data Exchange documentation lists only these two options for exports. It doesn't mention DSSE-KMS or SSE-C as choices in the export job. If you're setting up an auto-export as a subscriber, you pick the encryption options in the console when you add the bucket destination.\n\nAlso note that all S3 buckets have SSE-S3 as the default encryption configuration [2], so exported objects are encrypted at rest even if you don't pick anything special. If you do use SSE-KMS, the KMS key must be in the same Region as the bucket [3], and there are additional charges for using AWS KMS keys [3].",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Exporting revisions from AWS Data Exchange · AWS Data Exchange User Guide",
+    "Protecting data with encryption · Amazon Simple Storage Service User Guide",
+    "Using server-side encryption with AWS KMS keys (SSE-KMS) · Amazon Simple Storage Service User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 35,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 427
+  },
+  "timeToFirstTextMs": 1053,
+  "totalMs": 3663,
+  "costUsd": 0.007349
+}

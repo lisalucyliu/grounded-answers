@@ -1,0 +1,24 @@
+{
+  "id": "P3",
+  "question": "Does S3 replication copy objects encrypted with SSE-KMS, and what extra setup does that need?",
+  "effort": "low",
+  "visibleText": "Yes, but only if you opt in. By default, Amazon S3 doesn't replicate objects that are encrypted with SSE-KMS or DSSE-KMS, so you need to add some configuration. The setup has these parts:\n\n1. Opt-in: add the SourceSelectionCriteria element with SseKmsEncryptedObjects enabled to explicitly turn on replication of KMS-encrypted objects.\n\n2. Destination key: in the Destination element, add the ID of the symmetric AWS KMS customer managed key that S3 should use to encrypt the replicas. The key must be in the same Region as the destination bucket. Also check that it's valid: PutBucketReplication doesn't validate KMS keys, so an invalid key returns HTTP 200 OK but replication fails.\n\n3. IAM role permissions: the replication role needs s3:GetObjectVersionForReplication on the source objects. Prefer that over s3:GetObjectVersion, which doesn't allow replicating KMS-encrypted objects. It also needs kms:Decrypt on the key protecting the source object and kms:Encrypt on the key protecting the replica. If you replicate plaintext objects into a bucket with SSE-KMS or DSSE-KMS default encryption, you also need kms:GenerateDataKey.\n\n4. Cross-account: the KMS key owner must grant the source bucket owner permission to use the key. Your rule must specify a customer managed key for the destination account, since AWS managed keys can't be used across accounts.\n\n5. Bucket Keys: if you use S3 Bucket Keys, the encryption context becomes the bucket ARN rather than the object ARN, so update your IAM policies accordingly.\n\nWatch out for throttling too. If you add many new KMS-encrypted objects after enabling Cross-Region Replication, you might hit KMS transaction quotas and see HTTP 503 errors. You can request a quota increase through Service Quotas.\n\nReplication also needs versioning enabled on both source and destination buckets.",
+  "visibleTextWithMarkers": "Yes, but only if you opt in. By default, Amazon S3 doesn't replicate objects that are encrypted with SSE-KMS or DSSE-KMS [1], so you need to add some configuration. The setup has these parts:\n\n1. Opt-in: add the SourceSelectionCriteria element with SseKmsEncryptedObjects enabled to explicitly turn on replication of KMS-encrypted objects [1].\n2. Destination key: in the Destination element, add the ID of the symmetric AWS KMS customer managed key that S3 should use to encrypt the replicas [1]. The key must be in the same Region as the destination bucket [1]. Also check that it's valid: PutBucketReplication doesn't validate KMS keys, so an invalid key returns HTTP 200 OK but replication fails [1].\n3. IAM role permissions: the replication role needs s3:GetObjectVersionForReplication on the source objects [1]. Prefer that over s3:GetObjectVersion, which doesn't allow replicating KMS-encrypted objects [1]. It also needs kms:Decrypt on the key protecting the source object and kms:Encrypt on the key protecting the replica [1]. If you replicate plaintext objects into a bucket with SSE-KMS or DSSE-KMS default encryption, you also need kms:GenerateDataKey [1].\n4. Cross-account: the KMS key owner must grant the source bucket owner permission to use the key [1]. Your rule must specify a customer managed key for the destination account, since AWS managed keys can't be used across accounts [1].\n5. Bucket Keys: if you use S3 Bucket Keys, the encryption context becomes the bucket ARN rather than the object ARN, so update your IAM policies accordingly [1].\n\nWatch out for throttling too. If you add many new KMS-encrypted objects after enabling Cross-Region Replication, you might hit KMS transaction quotas and see HTTP 503 errors [1]. You can request a quota increase through Service Quotas.\n\nReplication also needs versioning enabled on both source and destination buckets [2].",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Replicating encrypted objects (SSE-S3, SSE-KMS, DSSE-KMS, SSE-C) · Amazon Simple Storage Service User Guide › Replicating objects encrypted with SSE-S3, SSE-KMS, or DSSE-KMS",
+    "Requirements and considerations for replication · Amazon Simple Storage Service User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 39,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 933
+  },
+  "timeToFirstTextMs": 476,
+  "totalMs": 5785,
+  "costUsd": 0.012417
+}

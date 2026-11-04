@@ -1,0 +1,24 @@
+{
+  "id": "N3",
+  "question": "Can I export a Data Exchange revision straight to Google Cloud Storage?",
+  "effort": "low",
+  "visibleText": "The documentation provided doesn't say anything about exporting to Google Cloud Storage. What it does cover is two export destinations for AWS Data Exchange assets. You can export these assets to an S3 bucket, or to a signed URL. Likewise, both providers and subscribers can export revisions of a data set to an S3 bucket that they have permissions to access.\n\nSince Google Cloud Storage isn't listed, I can't confirm a direct export is supported. A practical route based on what is documented is to export to S3 first, or to a signed URL, and then move the data to Google Cloud Storage with your own tooling. I can't say from these results how to do that second step.",
+  "visibleTextWithMarkers": "The documentation provided doesn't say anything about exporting to Google Cloud Storage. What it does cover is two export destinations for AWS Data Exchange assets. You can export these assets to an S3 bucket, or to a signed URL. [1] Likewise, both providers and subscribers can export revisions of a data set to an S3 bucket that they have permissions to access. [2]\n\nSince Google Cloud Storage isn't listed, I can't confirm a direct export is supported. A practical route based on what is documented is to export to S3 first, or to a signed URL, and then move the data to Google Cloud Storage with your own tooling. I can't say from these results how to do that second step.",
+  "marker": true,
+  "ga4": true,
+  "badge": "none",
+  "citedSources": [
+    "Exporting assets from AWS Data Exchange · AWS Data Exchange User Guide",
+    "Exporting revisions from AWS Data Exchange · AWS Data Exchange User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 31,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 260
+  },
+  "timeToFirstTextMs": 1137,
+  "totalMs": 2714,
+  "costUsd": 0.005671
+}

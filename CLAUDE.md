@@ -186,7 +186,7 @@ Playwright tests call the real Claude API, so every run costs money. Run only wh
 
 ## Open checks
 
-- [ ] **Real Vercel stop path. After the first deploy, stop 3 responses on the live site and check the Vercel function logs for `[answer] stream stopped`. The local result comes from the dev-only simulation, so this hasn't been proven on Vercel yet.
+- [x] **Real Vercel stop path.** Proven on Nov 2: 4 stops on the live site each logged `[answer] stream stopped: client disconnected` in the Vercel function logs (decision 82).
 - [ ] **VoiceOver.** Lisa's hand pass:
   - [ ] The live region announces "Stopped. This response is not complete." once per stop.
   - [ ] The GA-4 Alert: is it announced when it appears? The live region reads the response text, not the Alert.
@@ -219,6 +219,7 @@ Known, not urgent. Revisit later.
 - **Badge row with the panel open at 768px.** The chat is about 228px wide there. How "Overview", the badge and "Why?" wrap is not checked yet.
 - **Next Steps.** Next Steps were left out of the build. AWS Docs AI shows Next Steps (suggested questions) under normal responses, and Lisa's Oct 21 decision kept them, but the build never added them. Adding them would change the system prompt and the eval lock. The case study must say they were left out (Lisa, Nov 2).
 - **More than 5 GA-5c prompts.** Cloudscape: "Don't display more than five support prompts at a time." A list of 6 to 10 items breaks that. F1 has 4.
+- **GA-4 false alarm on N3 (export to Google Cloud).** In the Nov 3 eval, Claude started with [NO_ANSWER] on a question the docs answer ("No", exports go to S3 or a signed URL), so GA-4 showed and the answer hedged. One run. Likely cause, not proven: the marker reads "the docs don't mention Google Cloud" as "the docs don't answer". A fix changes the system prompt and the eval lock, so all evals must run again (Lisa, Nov 3).
 
 ## Doc data
 

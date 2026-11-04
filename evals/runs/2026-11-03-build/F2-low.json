@@ -1,0 +1,26 @@
+{
+  "id": "F2",
+  "question": "If I turn on versioning for a bucket, can I turn it off again later?",
+  "effort": "low",
+  "visibleText": "No, you can't fully turn it off, but you can suspend it. After you version-enable a bucket, it can never return to an unversioned state. But you can suspend versioning on that bucket. So a bucket can be in one of three states: unversioned (the default), versioning-enabled, or versioning-suspended.\n\nSuspending doesn't change what's already stored. When you suspend versioning, existing objects in your bucket do not change. What changes is how Amazon S3 handles objects in future requests. In practice, that means versions you've already accumulated stay in the bucket, and you keep paying for them. Each version of an object is the entire object; it is not just a diff from the previous version. If cost is the reason you want to turn it off, you'd need to clean up old versions separately, for example with a lifecycle rule that expires noncurrent versions. The docs describe this as a best practice for versioned buckets: it helps prevent objects in the bucket from accumulating a large number of noncurrent versions, which can slow down request performance.\n\nTo suspend, you set the status value to Suspended. In the console, that's under Properties, then Bucket Versioning, then Edit. One caveat: if you've enabled MFA Delete, you must provide your AWS account's access keys and a valid code from the account's MFA device to permanently delete an object version or suspend or reactivate versioning.\n\nAlso note that if the bucket is part of replication, both source and destination buckets must have versioning enabled, so suspending would conflict with that setup.",
+  "visibleTextWithMarkers": "No, you can't fully turn it off, but you can suspend it. After you version-enable a bucket, it can never return to an unversioned state. But you can suspend versioning on that bucket. [1] So a bucket can be in one of three states: unversioned (the default), versioning-enabled, or versioning-suspended.\n\nSuspending doesn't change what's already stored. When you suspend versioning, existing objects in your bucket do not change. What changes is how Amazon S3 handles objects in future requests. [1] In practice, that means versions you've already accumulated stay in the bucket, and you keep paying for them. Each version of an object is the entire object; it is not just a diff from the previous version. [2] If cost is the reason you want to turn it off, you'd need to clean up old versions separately, for example with a lifecycle rule that expires noncurrent versions. The docs describe this as a best practice for versioned buckets: it helps prevent objects in the bucket from accumulating a large number of noncurrent versions, which can slow down request performance. [3]\n\nTo suspend, you set the status value to Suspended [3]. In the console, that's under Properties, then Bucket Versioning, then Edit. One caveat: if you've enabled MFA Delete, you must provide your AWS account's access keys and a valid code from the account's MFA device to permanently delete an object version or suspend or reactivate versioning. [3]\n\nAlso note that if the bucket is part of replication, both source and destination buckets must have versioning enabled [4], so suspending would conflict with that setup.",
+  "marker": false,
+  "ga4": false,
+  "badge": "none",
+  "citedSources": [
+    "Retaining multiple versions of objects with S3 Versioning · Amazon Simple Storage Service User Guide › Unversioned, versioning-enabled, and versioning-suspended buckets",
+    "Retaining multiple versions of objects with S3 Versioning · Amazon Simple Storage Service User Guide",
+    "Enabling versioning on buckets · Amazon Simple Storage Service User Guide",
+    "Requirements and considerations for replication · Amazon Simple Storage Service User Guide"
+  ],
+  "stopReason": "end_turn",
+  "usage": {
+    "input": 28,
+    "cacheWrite": 0,
+    "cacheRead": 30086,
+    "output": 611
+  },
+  "timeToFirstTextMs": 1448,
+  "totalMs": 4897,
+  "costUsd": 0.009175
+}
