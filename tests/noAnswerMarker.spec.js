@@ -86,7 +86,7 @@ test('hidden while streaming, not copied, not announced, not in history; GA-4 sh
 
   await toolbar(page).getByRole('button', { name: 'Copy' }).click();
   expect(await page.evaluate(() => window.__copied)).toEqual([NO_ANSWER_MESSAGE]);
-  await expect.poll(() => page.evaluate(() => window.__liveAnnouncements)).toContain(NO_ANSWER_MESSAGE);
+  await expect.poll(() => page.evaluate(() => window.__liveAnnouncements)).toContain(`${NO_ANSWER_MESSAGE} Looking for something else? Search all results on AWS Docs.`);
 
   await ask(page, 'And per GB?');
   await expect(response(page).getByRole('toolbar', { name: 'Response actions' })).toBeVisible();
@@ -182,4 +182,64 @@ test('an error after the marker line keeps only its error Alert', async ({ page 
   await page.getByRole('button', { name: 'Try again' }).waitFor();
   await expect(lastResponse(page)).toHaveText(NO_ANSWER_MESSAGE);
   await expect(alert(page)).toHaveCount(0);
+});
+
+// The GA-4 Alert in the announcement. Written out here on purpose, so a change to the words fails a test.
+const ALERT_WORDS = 'Looking for something else? Search all results on AWS Docs';
+const COST_TEXT = 'The documentation cites $0.023 per GB per month for the first 50 TB.';
+const STOPPED = 'Stopped. This response is not complete.';
+const N1 = 'What does S3 Standard storage cost per GB in us-east-1?';
+const announcements = (page) => page.evaluate(() => window.__liveAnnouncements);
+
+test('GA-4 announcement: a complete 0-cited response says the Alert last, the same words the Alert shows', async ({ page }) => {
+  await recordLiveRegions(page);
+  await useFakeAnswer(page, ['markerUncited', 'uncited']);
+  await page.goto('/');
+
+  await ask(page, N2); // With the marker.
+  await toolbar(page).waitFor();
+  await expect.poll(() => announcements(page)).toContain(`${NO_ANSWER_MESSAGE} ${ALERT_WORDS}.`);
+  await expect(alert(page)).toHaveText(ALERT_WORDS); // The announced words are the shown words.
+
+  await ask(page, 'And per GB?'); // No marker, 0 cited.
+  await response(page).getByRole('toolbar', { name: 'Response actions' }).waitFor();
+  await expect.poll(async () => (await announcements(page)).at(-1)).toMatch(/^Both the source and destination.* Looking for something else\? Search all results on AWS Docs\.$/s);
+});
+
+test('GA-4 announcement: Low badge plus marker says the badge first and the Alert last', async ({ page }) => {
+  await recordLiveRegions(page);
+  await useFakeAnswer(page, ['markerFlagged']);
+  await page.goto('/');
+  await ask(page, N1);
+  await toolbar(page).waitFor();
+  await expect.poll(() => announcements(page)).toContain(`Low confidence. ${COST_TEXT} ${ALERT_WORDS}.`);
+});
+
+test('GA-4 announcement: a stop after the marker says the stop message and then the Alert, with the badge first if any', async ({ page }) => {
+  await recordLiveRegions(page);
+  await useFakeAnswer(page, ['holdMarkerLine', 'holdMarkerFlagged']);
+  await page.goto('/');
+
+  await ask(page, N2);
+  await expect(lastResponse(page)).toHaveText(NO_ANSWER_MESSAGE);
+  await stop(page);
+  await expect(alert(page)).toBeVisible();
+  await expect.poll(() => announcements(page)).toContain(`${STOPPED} ${ALERT_WORDS}.`);
+
+  await ask(page, N1);
+  await expect(lastResponse(page)).toContainText('$0.023');
+  await stop(page);
+  await expect(alert(page)).toBeVisible();
+  await expect.poll(() => announcements(page)).toContain(`Low confidence. ${STOPPED} ${ALERT_WORDS}.`);
+});
+
+test('GA-4 announcement: a normal cited response has no Alert words', async ({ page }) => {
+  await recordLiveRegions(page);
+  await useFakeAnswer(page, ['full']);
+  await page.goto('/');
+  await ask(page, N2);
+  await toolbar(page).waitFor();
+  await expect(alert(page)).toHaveCount(0);
+  await expect.poll(() => announcements(page)).toContainEqual(expect.stringMatching(/^Both the source and destination/));
+  expect((await announcements(page)).join(' ')).not.toContain('Looking for something else');
 });

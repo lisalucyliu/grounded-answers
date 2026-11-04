@@ -29,19 +29,26 @@ import {
   spaceStaticXxs,
 } from '@cloudscape-design/design-tokens';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import Response, { CONFIDENCE, ERROR_MESSAGE, STOPPED_MESSAGE } from './Response.jsx';
+import Response, { CONFIDENCE, ERROR_MESSAGE, NO_ANSWER_ALERT, STOPPED_MESSAGE } from './Response.jsx';
 import SourcesIcon, { SourcesFilledIcon } from './SourcesIcon.jsx';
 import SourcesPanel from './SourcesPanel.jsx';
-import { applyEvent, splitSources, streamAnswer, turnConfidence } from './streamAnswer.js';
+import { applyEvent, noAnswerFound, splitSources, streamAnswer, turnConfidence } from './streamAnswer.js';
 import { chatHistory, decideFollowUp, readTurn, resolvePick, turnText, visibleLists } from './followUp.js';
 import ClarifyResponse from './ClarifyResponse.jsx';
 
 let nextTurnId = 1;
 
-// What the live region says when a response ends: the badge text first, if the response has a badge.
-function withBadgeText(turn, message) {
+// What the live region says when a response ends: the badge text if it has a badge, the message,
+// then the GA-4 Alert's words if the Alert shows. The live region reads only this, so the Alert has to be in it.
+function endAnnouncement(turn, message) {
   const result = turnConfidence(turn);
-  return result ? `${CONFIDENCE[result.level].label}. ${message}` : message;
+  return [
+    result && `${CONFIDENCE[result.level].label}.`,
+    message,
+    noAnswerFound(turn) && `${NO_ANSWER_ALERT.message} ${NO_ANSWER_ALERT.link}.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 // Approved deviation (Lisa, Nov 2, decision 63): the AWS rail sizes, with literal px where no token gives the size.
@@ -150,7 +157,7 @@ export default function App() {
       if (isCurrent()) {
         updateTurn(turnId, () => ({ status: 'complete' }));
         const finished = { ...latest, status: 'complete' };
-        setAnnouncement(withBadgeText(finished, turnText(finished))); // Cloudscape: announce each new message.
+        setAnnouncement(endAnnouncement(finished, turnText(finished))); // Cloudscape: announce each new message.
       }
     } catch (error) {
       // A stop already set the stopped state. Anything else is a real failure.
@@ -217,7 +224,7 @@ export default function App() {
     updateTurn(request.turnId, () => ({ status: 'stopped' }));
     setGenerating(false);
     const stoppedTurn = turns.find((turn) => turn.id === request.turnId);
-    setAnnouncement(withBadgeText({ ...stoppedTurn, status: 'stopped' }, STOPPED_MESSAGE));
+    setAnnouncement(endAnnouncement({ ...stoppedTurn, status: 'stopped' }, STOPPED_MESSAGE));
     setTimeout(() => promptRef.current?.focus());
   }
 

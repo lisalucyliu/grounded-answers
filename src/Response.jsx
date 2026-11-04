@@ -15,6 +15,8 @@ import { allResultsUrl, buildSegments, collectSources, noAnswerFound, splitSourc
 
 export const STOPPED_MESSAGE = 'Stopped. This response is not complete.';
 export const ERROR_MESSAGE = "Something went wrong and the response didn't finish. Your question is saved.";
+// The GA-4 Alert's words. The Alert shows them, and the announcement in App.jsx reads them.
+export const NO_ANSWER_ALERT = { message: 'Looking for something else?', link: 'Search all results on AWS Docs' };
 
 // The list under the response shows this many cited sources. "View all sources" opens the rest in the panel.
 const SOURCES_SHOWN = 5;
@@ -271,9 +273,9 @@ export default function Response({ turn, canRegenerate, hideTryAgain, onRegenera
 
         {showNoAnswer && (
           <Alert type="info" i18nStrings={{ infoIconAriaLabel: 'Info' }}>
-            Looking for something else?{' '}
+            {NO_ANSWER_ALERT.message}{' '}
             <Link href={allResultsUrl(turn.question)} external externalIconAriaLabel="Opens in a new tab" variant="primary">
-              Search all results on AWS Docs
+              {NO_ANSWER_ALERT.link}
             </Link>
           </Alert>
         )}

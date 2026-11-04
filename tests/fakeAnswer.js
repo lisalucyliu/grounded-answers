@@ -125,6 +125,8 @@ const KINDS = {
   holdMarkerNoNewline: () => answerEvents({ sentences: [['[NO_ANSWER]', null]] }),
   // The marker line and some text, then it waits for Stop.
   holdMarkerLine: () => answerEvents({ sentences: [['[NO_ANSWER]\n' + NO_ANSWER_TEXT, null]] }),
+  // The marker line and a cited flagged sentence, then it waits for Stop.
+  holdMarkerFlagged: () => answerEvents({ sentences: MARKER_FLAGGED_ANSWER }),
   // The marker line and some text, then the server's error event.
   errorMarker: () => [...answerEvents({ sentences: [['[NO_ANSWER]\n' + NO_ANSWER_TEXT, null]] }), { type: 'error' }],
 };
@@ -135,7 +137,7 @@ export const fakeEvents = (kind) => [...KINDS[kind](), { type: 'done', stopReaso
 // answers: one entry per request, in order: "full", "uncited", "hold", "list", "twoLists", "dashes",
 // "skipped", "resolved", "costOnly", "costMixed", "holdCost", "holdUncited", "holdResolved", "holdEmpty",
 // "error", "errorEmpty", "errorMarker", "markerUncited", "markerCited", "markerFlagged", "holdMarkerPartial",
-// "holdMarkerNoNewline" or "holdMarkerLine". The hold kinds send their text and then wait until the request is cancelled (Stop).
+// "holdMarkerNoNewline", "holdMarkerLine" or "holdMarkerFlagged". The hold kinds send their text and then wait until the request is cancelled (Stop).
 // Each request body is kept in window.__answerRequests, so tests can check the history that was sent.
 export async function useFakeAnswer(page, answers) {
   const scripts = answers.map((kind) => ({ events: KINDS[kind](), hold: kind.startsWith('hold') }));
