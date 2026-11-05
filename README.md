@@ -50,7 +50,9 @@ The badge shows only when the response ends, and it never changes after that. Th
 
 ![The price question streaming: the text and price arrive first, and the Low badge appears at the end.](docs/gifs/grounded-answers-7-badge-timing.gif)
 
-Left out on purpose: the Next Steps questions that AWS Docs AI suggests under a response. Adding them would have changed the prompt after I locked it for the evals, so they wait for a later round.
+### Left out on purpose
+
+The Next Steps questions that AWS Docs AI suggests under a response are not in this build. Adding them would have changed the prompt after I locked it for the evals, so they wait for a later round.
 
 ## What a question costs
 
