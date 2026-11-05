@@ -187,12 +187,15 @@ Playwright tests call the real Claude API, so every run costs money. Run only wh
 ## Open checks
 
 - [x] **Real Vercel stop path.** Proven on Nov 2: 4 stops on the live site each logged `[answer] stream stopped: client disconnected` in the Vercel function logs (decision 82).
-- [ ] **VoiceOver.** Lisa's hand pass:
-  - [ ] The live region announces "Stopped. This response is not complete." once per stop.
-  - [ ] The GA-4 Alert: is it announced when it appears? The live region reads the response text, not the Alert.
-  - [ ] Repeated names across turns: every "Why?" and every "View all sources" has the same name.
-  - [ ] The pause in "Overview Low confidence": the name has no comma, so listen for whether the two parts run together.
-  - [ ] Two GA-5c groups in one chat with the same accessible name.
+- [x] **VoiceOver.** Lisa's hand pass on the live site, Safari, Nov 3:
+  - [x] Stop message: "Stopped. This response is not complete." is announced once per stop (F4).
+  - [x] GA-4 Alert: was NOT announced (N1: VoiceOver read the badge text and the response, then stopped). Fixed in 585af68 (Lisa approved): the completion and stop announcements now end with "Looking for something else? Search all results on AWS Docs." Lisa heard it on the live site after the deploy.
+  - [x] GA-5c question: "There are 4 options. Which one do you mean?" is announced both times in a row.
+  - [x] Completion announcement: badge text first, then the response text. No "Overview", no [n] markers, no Sources. As designed, except the [n] markers (see the parking lot).
+  - [x] Repeated names across turns: confirmed in code, not heard. Every "Why?" is named "Why?" and every "View all sources" is named "View all sources", with nothing to tell turns apart.
+  - [x] Two GA-5c groups: confirmed in code, not heard. Both are named with the question text, so they have the same name.
+  - [ ] The pause in "Overview Low confidence" when moving by heading: not checked. In the announcement there is a clear pause after "Low confidence."
+- [x] **Copy to clipboard.** Lisa's hand check, Nov 3, on F1 and N1: the paste matches the screen word for word. No "Overview", no badge text, no [n] markers (removed with no extra space), no Sources, no GA-4 Alert words.
 
 ## Open design decisions (from the design review on 2026-10-26)
 
@@ -220,6 +223,8 @@ Known, not urgent. Revisit later.
 - **Next Steps.** Next Steps were left out of the build. AWS Docs AI shows Next Steps (suggested questions) under normal responses, and Lisa's Oct 21 decision kept them, but the build never added them. Adding them would change the system prompt and the eval lock. The case study must say they were left out (Lisa, Nov 2).
 - **More than 5 GA-5c prompts.** Cloudscape: "Don't display more than five support prompts at a time." A list of 6 to 10 items breaks that. F1 has 4.
 - **GA-4 false alarm on N3 (export to Google Cloud).** In the Nov 3 eval, Claude started with [NO_ANSWER] on a question the docs answer ("No", exports go to S3 or a signed URL), so GA-4 showed and the answer hedged. One run. Likely cause, not proven: the marker reads "the docs don't mention Google Cloud" as "the docs don't answer". A fix changes the system prompt and the eval lock, so all evals must run again (Lisa, Nov 3).
+- **[n] citations are not announced.** The completion announcement uses the text without markers, so a screen reader user does not hear that the answer has sources. They can still reach each "Source n" button and the Sources list by moving through the page. Found in the VoiceOver pass (Nov 3).
+- **Copy drops the sources.** The copied text has no [n] markers and no source list, so a pasted answer loses its sources. The code does this on purpose, but Lisa has not decided it. Found in the copy check (Nov 3).
 
 ## Doc data
 
